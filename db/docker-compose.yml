@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  sofiax-db:
+    build: .
+    image: sofiax/sofiax-db
+    container_name: sofiax-db
+    ports:
+      - 5432:5432
