@@ -51,7 +51,9 @@ CREATE TABLE "Detection" (
   "err_f_sum" double precision,
   "ra" double precision,
   "dec" double precision,
-  "freq" double precision
+  "freq" double precision,
+  "flag" int,
+  unique ("ra", "dec", "freq", "run_id")
 );
 
 CREATE TABLE "Products" (
