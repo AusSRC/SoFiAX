@@ -1,26 +1,26 @@
 \connect sofiadb
 
-CREATE TABLE "Observation" (
-  "id" SERIAL PRIMARY KEY,
-  "name" varchar NOT NULL,
-  "datacube" varchar NOT NULL,
-  unique ("name", "datacube")
-);
-
 CREATE TABLE "Run" (
   "id" SERIAL PRIMARY KEY,
   "run_date" timestamp without time zone,
+  "datacube_name" varchar NOT NULL,
+  "datacube_header" json,
+  "sofia_parameters" bytea
+);
+
+CREATE TABLE "Instance" (
+  "id" SERIAL PRIMARY KEY,
+  "run_date" timestamp without time zone,
   "sofia_boundary" polygon,
-  "sofia_parameters" bytea,
   "sofia_flag_log" bytea,
   "sofia_reliability_plot" bytea,
   "sofia_log" bytea,
-  "obs_id" int
+  "run_id" int
 );
 
 CREATE TABLE "Detection" (
   "id" SERIAL PRIMARY KEY,
-  "run_id" int,
+  "instance_id" int,
   "name" varchar,
   "x" double precision,
   "y" double precision,
@@ -53,7 +53,7 @@ CREATE TABLE "Detection" (
   "dec" double precision,
   "freq" double precision,
   "flag" int,
-  unique ("ra", "dec", "freq", "run_id")
+  unique ("ra", "dec", "freq", "instance_id")
 );
 
 CREATE TABLE "Products" (
@@ -68,8 +68,8 @@ CREATE TABLE "Products" (
   "spectrum" bytea
 );
 
-ALTER TABLE "Run" ADD FOREIGN KEY ("obs_id") REFERENCES "Observation" ("id");
+ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id");
 
-ALTER TABLE "Detection" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id");
+ALTER TABLE "Detection" ADD FOREIGN KEY ("instance_id") REFERENCES "Instance" ("id");
 
 ALTER TABLE "Products" ADD FOREIGN KEY ("detection_id") REFERENCES "Detection" ("id");
