@@ -1,21 +1,27 @@
 \connect sofiadb
 
-CREATE TABLE "Run" (
+CREATE TABLE "Observation" (
   "id" SERIAL PRIMARY KEY,
-  "run_date" timestamp without time zone,
   "datacube_name" varchar NOT NULL,
   "datacube_header" json,
-  "sofia_parameters" bytea
+  unique ("datacube_name")
+);
+
+CREATE TABLE "Run" (
+  "id" SERIAL PRIMARY KEY,
+  "obs_id" int,
+  "run_date" timestamp without time zone,
+  "sofia_parameters" json
 );
 
 CREATE TABLE "Instance" (
   "id" SERIAL PRIMARY KEY,
+  "run_id" int,
   "run_date" timestamp without time zone,
   "sofia_boundary" polygon,
   "sofia_flag_log" bytea,
   "sofia_reliability_plot" bytea,
-  "sofia_log" bytea,
-  "run_id" int
+  "sofia_log" bytea
 );
 
 CREATE TABLE "Detection" (
@@ -67,6 +73,8 @@ CREATE TABLE "Products" (
   "channels" bytea,
   "spectrum" bytea
 );
+
+ALTER TABLE "Run" ADD FOREIGN KEY ("obs_id") REFERENCES "Observation" ("id");
 
 ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id");
 
