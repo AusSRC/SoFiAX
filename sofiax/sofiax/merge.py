@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import aiofiles
 import xmltodict
 import configparser
@@ -8,7 +9,7 @@ from datetime import datetime
 
 from sofiax.db import db_observation_insert, db_run_insert, \
     db_instance_insert, db_detection_insert, db_source_match, \
-    db_unresolved_insert, db_delete_detection, db_update_detection_unresolved_id
+    db_delete_detection, db_update_detection_unresolved
 
 
 async def parse_sofia_param_file(sofia_param_path: str):
@@ -130,44 +131,40 @@ async def match_merge_detections(conn, obs_name: str, run_name: str, params: dic
             detection = j['TD']
             flag = int(detection[16])
             # only check 0 or 4 flagged detections, throw the others away
-            if flag in [0, 4]:
-                # remove id from detection list
-                del detection[1]
-                # cast strings onto values
-                for i in range(1, len(detection)):
-                    detection[i] = float(detection[i])
+            if flag not in [0, 4]:
+                continue
+            # remove id from detection list
+            del detection[1]
+            # cast strings onto values
+            for i in range(1, len(detection)):
+                detection[i] = float(detection[i])
 
-                async with conn.transaction():
-                    result = await db_source_match(conn, run_id, detection)
-                    result_len = len(result)
-                    if result_len == 0:
-                        await db_detection_insert(conn, instance_id, detection)
-                    elif result_len == 1:
-                        flux = (detection[13], result[0]['f_sum'])
-                        spatial = (detection[19], result[0]['ell_maj'], detection[20], result[0]['ell_min'])
-                        spectral = (detection[17], result[0]['w20'], detection[18], result[0]['w50'])
+            async with conn.transaction():
+                result = await db_source_match(conn, run_id, detection)
+                result_len = len(result)
+                if result_len == 0:
+                    await db_detection_insert(conn, instance_id, detection)
+                else:
+                    resolved = False
+                    for db_detect in result:
+                        flux = (detection[13], db_detect['f_sum'])
+                        spatial = (detection[19], db_detect['ell_maj'],
+                                   detection[20], db_detect['ell_min'])
+                        spectral = (detection[17], db_detect['w20'],
+                                    detection[18], db_detect['w50'])
                         check_result = sanity_check(flux, spatial, spectral, sanity_thresholds)
-                        # if the sanity check fails, add detection and mark both as needed manual resolution
-                        if check_result is False:
-                            detection_id = await db_detection_insert(conn, instance_id, detection)
-                            unresolved_id = result[0]['unresolved_detection_id']
-                            if unresolved_id is not None:
-                                await db_update_detection_unresolved_id(conn, unresolved_id, [detection_id])
-                            else:
-                                await db_unresolved_insert(conn, [detection_id, result[0]['id']])
-                        else:
-                            if detection[15] == 0 and result[0]['flag'] == 4:
-                                # keep flagged detections of 0 over 4
-                                await db_delete_detection(conn, result[0]['id'])
-                                await db_detection_insert(conn, instance_id, detection)
-                    else:
-                        # if there are multiple detections then they must already be unresolved
-                        detect_set = set()
-                        for detect in result:
-                            detect_set.add(detect['unresolved_detection_id'])
-                        if len(detect_set) != 1:
-                            raise Exception('Sources that are similar do not share the same unresolved detection id')
-
-                        unresolved_id = result[0]['unresolved_detection_id']
-                        detection_id = await db_detection_insert(conn, instance_id, detection)
-                        await db_update_detection_unresolved_id(conn, unresolved_id, [detection_id])
+                        if check_result:
+                            detect_flag = detection[15]
+                            db_detect_flag = db_detect['flag']
+                            if detect_flag == 0 and db_detect_flag == 4:
+                                await db_delete_detection(conn, db_detect['id'])
+                                await db_detection_insert(conn, instance_id, detection, db_detect['unresolved'])
+                            elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:
+                                if bool(random.getrandbits(1)) is True:
+                                    await db_delete_detection(conn, db_detect['id'])
+                                    await db_detection_insert(conn, instance_id, detection, db_detect['unresolved'])
+                            resolved = True
+                            break
+                    if resolved is False:
+                        await db_detection_insert(conn, instance_id, detection, True)
+                        await db_update_detection_unresolved(conn, True, [i['id'] for i in result])

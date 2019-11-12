@@ -1,3 +1,4 @@
 FROM library/postgres:12
-COPY *.sql /docker-entrypoint-initdb.d/
 RUN apt-get update && apt-get upgrade -y && apt-get install -y postgresql-contrib
+RUN apt-get install -y postgis
+COPY *.sql /docker-entrypoint-initdb.d/

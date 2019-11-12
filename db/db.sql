@@ -1,36 +1,42 @@
 \connect sofiadb
 
+CREATE EXTENSION postgis;
+
+
+
 CREATE TABLE "Observation" (
-  "id" SERIAL PRIMARY KEY,
-  "datacube_name" varchar NOT NULL,
-  "datacube_header" json,
-  unique ("datacube_name")
+  "id" BIGSERIAL PRIMARY KEY,
+  "name" varchar NOT NULL,
+  unique ("name")
 );
 
 CREATE TABLE "Run" (
-  "id" SERIAL PRIMARY KEY,
-  "obs_id" int,
-  "run_date" timestamp without time zone,
-  "sofia_parameters" json
+  "id" BIGSERIAL PRIMARY KEY,
+  "name" varchar NOT NULL,
+  "duplicate_sanity_thresholds" jsonb NOT NULL,
+  "obs_id" bigint NOT NULL,
+   unique ("name", "duplicate_sanity_thresholds", "obs_id")
 );
 
 CREATE TABLE "Instance" (
-  "id" SERIAL PRIMARY KEY,
-  "run_id" int,
-  "run_date" timestamp without time zone,
-  "sofia_boundary" polygon,
+  "id" BIGSERIAL PRIMARY KEY,
+  "run_id" bigint NOT NULL,
+  "run_date" timestamp without time zone NOT NULL,
+  "sofia_boundary" integer[] NOT NULL,
   "sofia_flag_log" bytea,
   "sofia_reliability_plot" bytea,
-  "sofia_log" bytea
+  "sofia_log" bytea,
+  "sofia_parameters" jsonb NOT NULL,
+  unique ("run_id", "sofia_boundary")
 );
 
 CREATE TABLE "Detection" (
-  "id" SERIAL PRIMARY KEY,
-  "instance_id" int,
+  "id" BIGSERIAL PRIMARY KEY,
+  "instance_id" bigint NOT NULL,
   "name" varchar,
-  "x" double precision,
-  "y" double precision,
-  "z" double precision,
+  "x" double precision NOT NULL,
+  "y" double precision NOT NULL ,
+  "z" double precision NOT NULL,
   "x_min" numeric,
   "x_max" numeric,
   "y_min" numeric,
@@ -51,20 +57,22 @@ CREATE TABLE "Detection" (
   "ell3s_maj" double precision,
   "ell3s_min" double precision,
   "ell3s_ps" double precision,
-  "err_x" double precision,
-  "err_y" double precision,
-  "err_z" double precision,
+  "err_x" double precision NOT NULL,
+  "err_y" double precision NOT NULL,
+  "err_z" double precision NOT NULL,
   "err_f_sum" double precision,
-  "ra" double precision,
-  "dec" double precision,
-  "freq" double precision,
+  "ra" double precision NOT NULL,
+  "dec" double precision NOT NULL,
+  "freq" double precision NOT NULL,
   "flag" int,
+  "unresolved" boolean DEFAULT False NOT NULL,
   unique ("ra", "dec", "freq", "instance_id")
 );
 
+
 CREATE TABLE "Products" (
-  "id" SERIAL PRIMARY KEY,
-  "detection_id" int,
+  "id" BIGSERIAL PRIMARY KEY,
+  "detection_id" bigint NOT NULL,
   "cube" bytea,
   "mask" bytea,
   "moment0" bytea,
@@ -74,10 +82,13 @@ CREATE TABLE "Products" (
   "spectrum" bytea
 );
 
-ALTER TABLE "Run" ADD FOREIGN KEY ("obs_id") REFERENCES "Observation" ("id");
+ALTER TABLE "Run" ADD FOREIGN KEY ("obs_id") REFERENCES "Observation" ("id") ON DELETE CASCADE;
+ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
+ALTER TABLE "Detection" ADD FOREIGN KEY ("instance_id") REFERENCES "Instance" ("id") ON DELETE CASCADE;
+ALTER TABLE "Products" ADD FOREIGN KEY ("detection_id") REFERENCES "Detection" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id");
-
-ALTER TABLE "Detection" ADD FOREIGN KEY ("instance_id") REFERENCES "Instance" ("id");
-
-ALTER TABLE "Products" ADD FOREIGN KEY ("detection_id") REFERENCES "Detection" ("id");
+ALTER TABLE "Observation" OWNER TO "sofia_user";
+ALTER TABLE "Run" OWNER TO "sofia_user";
+ALTER TABLE "Instance" OWNER TO "sofia_user";
+ALTER TABLE "Detection" OWNER TO "sofia_user";
+ALTER TABLE "Products" OWNER TO "sofia_user";
