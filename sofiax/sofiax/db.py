@@ -42,7 +42,7 @@ async def db_source_match(conn, run_id: int, detection: list):
                               '(($1 - x)^2 + ($2 - y)^2)) AND '
                               'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
                               '<= 3 * SQRT($6 ^ 2 + err_z ^ 2) AND '
-                              'x != $1 AND y != $2 AND z != 3 AND '
+                              'x != $1 AND y != $2 AND z != $3 AND '
                               'd.instance_id = i.id AND i.run_id = $7 FOR UPDATE',
                               x, y, z, err_x, err_y, err_z, run_id)
     return result
