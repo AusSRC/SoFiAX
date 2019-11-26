@@ -13,21 +13,22 @@ CREATE TABLE "Observation" (
 CREATE TABLE "Run" (
   "id" BIGSERIAL PRIMARY KEY,
   "name" varchar NOT NULL,
-  "duplicate_sanity_thresholds" jsonb NOT NULL,
+  "sanity_thresholds" jsonb NOT NULL,
   "obs_id" bigint NOT NULL,
-   unique ("name", "duplicate_sanity_thresholds", "obs_id")
+   unique ("name", "sanity_thresholds", "obs_id")
 );
 
 CREATE TABLE "Instance" (
   "id" BIGSERIAL PRIMARY KEY,
   "run_id" bigint NOT NULL,
+  "filename" varchar NOT NULL,
+  "boundary" integer[] NOT NULL,
   "run_date" timestamp without time zone NOT NULL,
-  "sofia_boundary" integer[] NOT NULL,
-  "sofia_flag_log" bytea,
-  "sofia_reliability_plot" bytea,
-  "sofia_log" bytea,
-  "sofia_parameters" jsonb NOT NULL,
-  unique ("run_id", "sofia_boundary")
+  "flag_log" bytea,
+  "reliability_plot" bytea,
+  "log" bytea,
+  "parameters" jsonb NOT NULL,
+  unique ("run_id", "filename", "boundary")
 );
 
 CREATE TABLE "Detection" (
