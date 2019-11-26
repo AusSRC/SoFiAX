@@ -10,21 +10,21 @@ async def db_observation_insert(conn, name: str):
 
 
 async def db_run_insert(conn, name: str, obs_id: int, sanity_thresholds: json):
-    run_id = await conn.fetchrow('INSERT INTO "Run" (name, obs_id, duplicate_sanity_thresholds) '
-                                 'VALUES($1, $2, $3) ON CONFLICT (name, obs_id, duplicate_sanity_thresholds) '
+    run_id = await conn.fetchrow('INSERT INTO "Run" (name, obs_id, sanity_thresholds) '
+                                 'VALUES($1, $2, $3) ON CONFLICT (name, obs_id, sanity_thresholds) '
                                  'DO UPDATE SET name=EXCLUDED.name RETURNING id',
                                  name, obs_id, sanity_thresholds)
     return run_id[0]
 
 
-async def db_instance_insert(conn, run_id, run_date, sofia_boundary, sofia_flag_log,
-                             sofia_reliability_plot, sofia_log, sofia_parameters):
-    run_id = await conn.fetchrow('INSERT INTO "Instance" (run_id, run_date, sofia_boundary, sofia_flag_log, '
-                                 'sofia_reliability_plot, sofia_log, sofia_parameters) '
-                                 'VALUES($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (run_id, sofia_boundary) '
+async def db_instance_insert(conn, run_id, run_date, filename, boundary, flag_log,
+                             reliability_plot, log, parameters):
+    run_id = await conn.fetchrow('INSERT INTO "Instance" (run_id, run_date, filename, boundary, flag_log, '
+                                 'reliability_plot, log, parameters) '
+                                 'VALUES($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (run_id, filename, boundary) '
                                  'DO UPDATE SET run_id=EXCLUDED.run_id RETURNING id',
-                                 run_id, run_date, sofia_boundary, sofia_flag_log,
-                                 sofia_reliability_plot, sofia_log, sofia_parameters)
+                                 run_id, run_date, filename, boundary, flag_log,
+                                 reliability_plot, log, parameters)
     return run_id[0]
 
 
@@ -38,7 +38,7 @@ async def db_source_match(conn, run_id: int, detection: list):
     result = await conn.fetch('SELECT d.id, d.instance_id, x, y, z, f_sum, ell_maj, ell_min, w50, w20, '
                               'flag, unresolved FROM "Detection" as d, "Instance" as i WHERE '
                               'ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
-                              '<= 3 * SQRT((($1 - x)^2 * ($4 + err_x)^2 + ($2 - y)^2 * ($5 + err_y)^2) / '
+                              '<= 3 * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '
                               '(($1 - x)^2 + ($2 - y)^2)) AND '
                               'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
                               '<= 3 * SQRT($6 ^ 2 + err_z ^ 2) AND '
