@@ -1,19 +1,29 @@
 import asyncio
 import asyncpg
-
+import logging
+import sys
 
 from sofiax.merge import match_merge_detections, parse_sofia_param_file
 
 
 async def run():
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    root.addHandler(handler)
+
     conn = await asyncpg.connect(user='sofia_user', password='sofia_user',
                                  database='sofiadb', host='127.0.0.1')
 
-    params = await parse_sofia_param_file('/Users/dpallot/Projects/sofia/SoFiA-2/sofia.par')
-    sanity_thresholds = {'flux': 2, 'spatial_extent': (2, 2), 'spectral_extent': (2, 2)}
+    params = await parse_sofia_param_file('/Users/dpallot/Projects/SoFiAX/data/eridanus_full_3/sofia_a.par')
+    sanity_thresholds = {'flux': 5, 'spatial_extent': (5, 5), 'spectral_extent': (5, 5)}
     await match_merge_detections(conn,
-                                 'image.restored.i.SB2338.V2.cube',
-                                 'image.restored.i.SB2338.V2.cube_run',
+                                 'eridanus',
+                                 'eridanus_run',
                                  params,
                                  sanity_thresholds)
 
