@@ -19,7 +19,7 @@ async def run():
     conn = await asyncpg.connect(user='sofia_user', password='sofia_user',
                                  database='sofiadb', host='127.0.0.1')
 
-    params = await parse_sofia_param_file('/Users/dpallot/Projects/SoFiAX/data/eridanus_full_3/sofia_a.par')
+    params = await parse_sofia_param_file('/Users/dpallot/Projects/SoFiAX/data/eridanus_full_3/sofia_h.par')
     sanity_thresholds = {'flux': 5, 'spatial_extent': (5, 5), 'spectral_extent': (5, 5)}
     await match_merge_detections(conn,
                                  'eridanus',

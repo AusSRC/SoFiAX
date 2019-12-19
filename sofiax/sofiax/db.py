@@ -19,13 +19,13 @@ async def db_run_insert(conn, name: str, obs_id: int, sanity_thresholds: json):
 
 async def db_instance_insert(conn, run_id, run_date, filename, boundary, flag_log,
                              reliability_plot, log, parameters):
-    run_id = await conn.fetchrow('INSERT INTO "Instance" (run_id, run_date, filename, boundary, flag_log, '
+    ins_id = await conn.fetchrow('INSERT INTO "Instance" (run_id, run_date, filename, boundary, flag_log, '
                                  'reliability_plot, log, parameters) '
                                  'VALUES($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (run_id, filename, boundary) '
                                  'DO UPDATE SET run_id=EXCLUDED.run_id RETURNING id',
                                  run_id, run_date, filename, boundary, flag_log,
                                  reliability_plot, log, parameters)
-    return run_id[0]
+    return ins_id[0]
 
 
 async def db_source_match(conn, run_id: int, detection: list):
@@ -43,24 +43,38 @@ async def db_source_match(conn, run_id: int, detection: list):
                               'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
                               '<= 3 * SQRT($6 ^ 2 + err_z ^ 2) AND '
                               'x != $1 AND y != $2 AND z != $3 AND '
-                              'd.instance_id = i.id AND i.run_id = $7 FOR UPDATE',
+                              'd.instance_id = i.id AND i.run_id = $7 FOR UPDATE OF "Detection"',
                               x, y, z, err_x, err_y, err_z, run_id)
     return result
 
 
-async def db_detection_insert(conn, instance_id: int, detection: list, unresolved: bool = False):
+async def db_detection_product_insert(conn, detection_id, cube, mask, mom0, mom1, mom2, chan, spec):
+    product_id = await conn.fetchrow('INSERT INTO "Products" '
+                                     '(detection_id, cube, mask, moment0, moment1, moment2, channels, spectrum) '
+                                     'VALUES($1, $2, $3, $4, $5, $6, $7, $8) '
+                                     'ON CONFLICT (detection_id) '
+                                     'DO UPDATE SET detection_id=EXCLUDED.detection_id RETURNING id',
+                                     detection_id, cube, mask, mom0, mom1, mom2, chan, spec)
+
+    return product_id[0]
+
+
+async def db_detection_insert(conn, run_id: int, instance_id: int, detection: list,
+                              cube: bytes, mask: bytes, mom0: bytes, mom1: bytes, mom2: bytes, chan: bytes, spec: bytes,
+                              unresolved: bool = False):
     detection_id = await conn.fetchrow('INSERT INTO "Detection" '
-                                       '(instance_id, unresolved, name, x, y, z, x_min, x_max, '
+                                       '(run_id, instance_id, unresolved, name, x, y, z, x_min, x_max, '
                                        'y_min, y_max, z_min, z_max, n_pix, f_min, f_max, f_sum, rel, flag, rms, '
                                        'w20, w50, ell_maj, ell_min, ell_pa, ell3s_maj, ell3s_min, ell3s_ps, err_x, '
                                        'err_y, err_z, err_f_sum, ra, dec, freq) '
                                        'VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, '
                                        '$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, '
-                                       '$28, $29, $30, $31, $32, $33, $34) '
-                                       'ON CONFLICT (ra, dec, freq, instance_id) '
+                                       '$28, $29, $30, $31, $32, $33, $34, $35) '
+                                       'ON CONFLICT (ra, dec, freq, instance_id, run_id) '
                                        'DO UPDATE SET ra=EXCLUDED.ra RETURNING id',
-                                       instance_id, unresolved, *detection)
+                                       run_id, instance_id, unresolved, *detection)
 
+    await db_detection_product_insert(conn, detection_id[0], cube, mask, mom0, mom1, mom2, chan, spec)
     return detection_id[0]
 
 
