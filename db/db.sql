@@ -34,6 +34,7 @@ CREATE TABLE "Instance" (
 CREATE TABLE "Detection" (
   "id" BIGSERIAL PRIMARY KEY,
   "instance_id" bigint NOT NULL,
+  "run_id" bigint NOT NULL,
   "name" varchar,
   "x" double precision NOT NULL,
   "y" double precision NOT NULL ,
@@ -67,7 +68,7 @@ CREATE TABLE "Detection" (
   "freq" double precision NOT NULL,
   "flag" int,
   "unresolved" boolean DEFAULT False NOT NULL,
-  unique ("ra", "dec", "freq", "instance_id")
+  unique ("ra", "dec", "freq", "instance_id", "run_id")
 );
 
 
@@ -80,12 +81,14 @@ CREATE TABLE "Products" (
   "moment1" bytea,
   "moment2" bytea,
   "channels" bytea,
-  "spectrum" bytea
+  "spectrum" bytea,
+  unique ("detection_id")
 );
 
 ALTER TABLE "Run" ADD FOREIGN KEY ("obs_id") REFERENCES "Observation" ("id") ON DELETE CASCADE;
 ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
 ALTER TABLE "Detection" ADD FOREIGN KEY ("instance_id") REFERENCES "Instance" ("id") ON DELETE CASCADE;
+ALTER TABLE "Detection" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
 ALTER TABLE "Products" ADD FOREIGN KEY ("detection_id") REFERENCES "Detection" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "Observation" OWNER TO "sofia_user";
