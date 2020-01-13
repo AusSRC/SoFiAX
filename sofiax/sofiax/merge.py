@@ -204,10 +204,10 @@ async def match_merge_detections(conn, obs_name: str, run_name: str, params: dic
                                 logging.info(f"Replacing, Name: {detection[0]} Details: flag 0 with "
                                              f"flag 0 or flag 4 with flag 4")
                                 await db_delete_detection(conn, db_detect['id'])
-                                detection_d = await db_detection_insert(conn, run_id, instance_id, detection,
-                                                                        cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                                                                        mom2_bytes, chan_bytes, spec_bytes,
-                                                                        db_detect['unresolved'])
+                                await db_detection_insert(conn, run_id, instance_id, detection,
+                                                          cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
+                                                          mom2_bytes, chan_bytes, spec_bytes,
+                                                          db_detect['unresolved'])
                         resolved = True
                         break
                 if resolved is False:

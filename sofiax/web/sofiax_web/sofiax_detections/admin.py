@@ -2,6 +2,8 @@ from django.contrib import admin, messages
 from django.urls import reverse
 from django.utils.html import format_html
 from django.forms import forms
+from django.db import transaction
+from random import choice
 
 from .decorators import action_form
 from .models import Observation, Run, Instance, Detection, UnresolvedDetection
@@ -16,7 +18,7 @@ class DetectionAdmin(admin.ModelAdmin):
         qs = super(DetectionAdmin, self).get_queryset(request).select_related('run')
         return qs.filter(unresolved=False)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -29,7 +31,7 @@ class DetectionAdmin(admin.ModelAdmin):
 class UnresolvedDetectionAdmin(admin.ModelAdmin):
     model = UnresolvedDetection
     show_change_link = True
-    actions = ['check_action', 'resolve_action']
+    actions = ['check_action', 'resolve_action', 'manual_resolve']
 
     def get_actions(self, request):
         if request.GET:
@@ -54,7 +56,7 @@ class UnresolvedDetectionAdmin(admin.ModelAdmin):
         qs = super(UnresolvedDetectionAdmin, self).get_queryset(request).select_related('run')
         return qs.filter(unresolved=True)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -66,23 +68,67 @@ class UnresolvedDetectionAdmin(admin.ModelAdmin):
     class ResolveDetectionForm(forms.Form):
         title = 'One random unresolved detection below will marked as "resolved" and the rest deleted.'
 
+    class ChangeUnresolvedFlagDetectionForm(forms.Form):
+        title = 'Manually change unresolved flag of the following detection(s), you may have duplications.'
+
     @action_form(ResolveDetectionForm)
     def resolve_action(self, request, queryset, form):
-        pass
+        with transaction.atomic():
+            detect_list = list(queryset.select_for_update())
+            if len(detect_list) <= 1:
+                messages.error(request, "Can not resolve an empty or single detection")
+                return 0
+            run_set = {detect.run.id for detect in detect_list}
+            if len(run_set) > 1:
+                messages.error(request, "Detections from multiple runs selected")
+                return 0
+            for index, detect_outer in enumerate(detect_list):
+                for detect_inner in detect_list[index + 1:]:
+                    if not detect_outer.is_match(detect_inner):
+                        msg = f"Detections {detect_inner.id}, {detect_outer.id} are not in the " \
+                              f"same spacial and spectral range"
+                        messages.error(request, msg)
+                        return 0
+            detect = choice(detect_list)
+            detect_list.remove(detect)
+            qs = queryset.filter(id__in=[detect.id for detect in detect_list])
+            detect.unresolved = False
+            # DOnt update all the field only the unresolved flag, updating all the fields can change the precision
+            detect.save(update_fields=["unresolved"])
+            qs.delete()
+            return len(detect_list)
 
-    resolve_action.short_description = 'Resolve Detections'
+    resolve_action.short_description = 'Auto Resolve Detections'
+
+    @action_form(ChangeUnresolvedFlagDetectionForm)
+    def manual_resolve(self, request, queryset, form):
+        with transaction.atomic():
+            detect_list = list(queryset.select_for_update())
+            for detect in detect_list:
+                detect.unresolved = False
+                detect.save(update_fields=["unresolved"])
+            return len(detect_list)
+
+    manual_resolve.short_description = "Manual Resolve Detections"
 
     def check_action(self, request, queryset):
-        for index, detect_outer in enumerate(queryset):
-            for detect_inner in queryset[index+1:]:
+        detect_list = list(queryset)
+        for index, detect_outer in enumerate(detect_list):
+            for detect_inner in detect_list[index+1:]:
                 if detect_outer.is_match(detect_inner):
                     sanity, msg = detect_outer.sanity_check(detect_inner)
                     if sanity is False:
                         messages.info(request, msg)
-
+                    else:
+                        messages.info(request, "sanity passed")
+                else:
+                    msg = f"Detections {detect_inner.id}, {detect_outer.id} are not in the " \
+                          f"same spacial and spectral range"
+                    messages.error(request, msg)
+                    return
         return None
 
-    check_action.short_description = 'Check Detections'
+    check_action.short_description = 'Sanity Check Detections'
 
 
 class DetectionAdminInline(admin.TabularInline):
@@ -99,7 +145,7 @@ class DetectionAdminInline(admin.TabularInline):
         qs = super(DetectionAdminInline, self).get_queryset(request)
         return qs.filter(unresolved=False)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -124,7 +170,7 @@ class UnresolvedDetectionAdminInline(admin.TabularInline):
         qs = super(UnresolvedDetectionAdminInline, self).get_queryset(request)
         return qs.filter(unresolved=True)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_change_permission(self, request, obj=None):
@@ -141,7 +187,7 @@ class InstanceAdminInline(admin.TabularInline):
     exclude = ['parameters']
     readonly_fields = list_display
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -158,7 +204,7 @@ class InstanceAdmin(admin.ModelAdmin):
     readonly_fields = list_display
     #inlines = (DetectionAdminInline,)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -179,7 +225,7 @@ class RunAdmin(admin.ModelAdmin):
         return format_html("<a href='%s?run=%s'>%s</a>" % (url, obj.id, 'View'))
     run_link.short_description = 'Unresolved Detections'
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -196,7 +242,7 @@ class RunAdminInline(admin.TabularInline):
     fields = list_display
     readonly_fields = fields
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
@@ -210,7 +256,7 @@ class ObservationAdmin(admin.ModelAdmin):
     list_display = ['name']
     inlines = (RunAdminInline,)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     def has_delete_permission(self, request, obj=None):
