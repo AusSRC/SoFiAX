@@ -4,18 +4,11 @@ CREATE EXTENSION postgis;
 
 
 
-CREATE TABLE "Observation" (
-  "id" BIGSERIAL PRIMARY KEY,
-  "name" varchar NOT NULL,
-  unique ("name")
-);
-
 CREATE TABLE "Run" (
   "id" BIGSERIAL PRIMARY KEY,
   "name" varchar NOT NULL,
   "sanity_thresholds" jsonb NOT NULL,
-  "obs_id" bigint NOT NULL,
-   unique ("name", "sanity_thresholds", "obs_id")
+   unique ("name", "sanity_thresholds")
 );
 
 CREATE TABLE "Instance" (
@@ -85,13 +78,11 @@ CREATE TABLE "Products" (
   unique ("detection_id")
 );
 
-ALTER TABLE "Run" ADD FOREIGN KEY ("obs_id") REFERENCES "Observation" ("id") ON DELETE CASCADE;
 ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
 ALTER TABLE "Detection" ADD FOREIGN KEY ("instance_id") REFERENCES "Instance" ("id") ON DELETE CASCADE;
 ALTER TABLE "Detection" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
 ALTER TABLE "Products" ADD FOREIGN KEY ("detection_id") REFERENCES "Detection" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "Observation" OWNER TO "sofia_user";
 ALTER TABLE "Run" OWNER TO "sofia_user";
 ALTER TABLE "Instance" OWNER TO "sofia_user";
 ALTER TABLE "Detection" OWNER TO "sofia_user";

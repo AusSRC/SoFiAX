@@ -8,8 +8,8 @@ import logging
 
 from datetime import datetime
 
-from sofiax.db import db_observation_insert, db_run_insert, \
-    db_instance_insert, db_detection_insert, db_source_match, \
+from db import db_run_insert, db_instance_insert, \
+    db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved
 
 
@@ -74,7 +74,7 @@ def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, san
     return True
 
 
-async def match_merge_detections(conn, obs_name: str, run_name: str, params: dict, sanity_thresholds: dict):
+async def match_merge_detections(conn, run_name: str, params: dict, sanity_thresholds: dict):
     try:
         flux = sanity_thresholds['flux']
         if not isinstance(flux, int):
@@ -109,8 +109,7 @@ async def match_merge_detections(conn, obs_name: str, run_name: str, params: dic
     if os.path.isabs(output_dir) is False:
         raise ValueError('output.directory requires absolute path')
 
-    obs_id = await db_observation_insert(conn, obs_name)
-    run_id = await db_run_insert(conn, run_name, obs_id, json.dumps(sanity_thresholds))
+    run_id = await db_run_insert(conn, run_name, json.dumps(sanity_thresholds))
 
     output_filename = params['output.filename']
     if not output_filename:

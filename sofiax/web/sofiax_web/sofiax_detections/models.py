@@ -213,21 +213,6 @@ class Instance(models.Model):
         unique_together = (('run', 'filename', 'boundary'),)
 
 
-class Observation(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    name = models.TextField(unique=True)
-
-    def __unicode__(self):
-        return str(self.name)
-
-    def __str__(self):
-        return str(self.name)
-
-    class Meta:
-        managed = False
-        db_table = 'Observation'
-
-
 class Products(models.Model):
     id = models.BigAutoField(primary_key=True)
     detection = models.ForeignKey(Detection, models.DO_NOTHING)
@@ -249,7 +234,6 @@ class Run(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.TextField()
     sanity_thresholds = models.TextField()  # This field type is a guess.
-    obs = models.ForeignKey(Observation, models.DO_NOTHING)
 
     def __str__(self):
         return f"{self.name}"
@@ -257,7 +241,7 @@ class Run(models.Model):
     class Meta:
         managed = False
         db_table = 'Run'
-        unique_together = (('name', 'sanity_thresholds', 'obs'),)
+        unique_together = (('name', 'sanity_thresholds'),)
 
 
 class SpatialRefSys(models.Model):

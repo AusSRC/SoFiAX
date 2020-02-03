@@ -6,13 +6,14 @@ from django.db import transaction
 from random import choice
 
 from .decorators import action_form
-from .models import Observation, Run, Instance, Detection, UnresolvedDetection
+from .models import Run, Instance, Detection, UnresolvedDetection
 
 
 class DetectionAdmin(admin.ModelAdmin):
     model = Detection
     show_change_link = True
     list_display = ('id', 'run', 'name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50')
+    search_fields = ['run__name']
 
     def get_queryset(self, request):
         qs = super(DetectionAdmin, self).get_queryset(request).select_related('run')
@@ -199,10 +200,14 @@ class InstanceAdminInline(admin.TabularInline):
 
 class InstanceAdmin(admin.ModelAdmin):
     model = Instance
-    list_display = ('run', 'filename', 'run_date', 'boundary')
+    list_display = ('filename', 'run', 'run_date', 'boundary')
     exclude = ['parameters']
     readonly_fields = list_display
-    #inlines = (DetectionAdminInline,)
+    raw_id_fields = ['run']
+
+    def get_queryset(self, request):
+        qs = super(InstanceAdmin, self).get_queryset(request).select_related('run')
+        return qs
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -252,21 +257,6 @@ class RunAdminInline(admin.TabularInline):
         return False
 
 
-class ObservationAdmin(admin.ModelAdmin):
-    list_display = ['name']
-    inlines = (RunAdminInline,)
-
-    def has_add_permission(self, request, obj=None):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-
-admin.site.register(Observation, ObservationAdmin)
 admin.site.register(Run, RunAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(Detection, DetectionAdmin)

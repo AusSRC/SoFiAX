@@ -1,19 +1,11 @@
 import json
 
 
-async def db_observation_insert(conn, name: str):
-    obs_id = await conn.fetchrow('INSERT INTO "Observation" (name) '
-                                 'VALUES($1) ON CONFLICT (name) '
+async def db_run_insert(conn, name: str, sanity_thresholds: json):
+    run_id = await conn.fetchrow('INSERT INTO "Run" (name, sanity_thresholds) '
+                                 'VALUES($1, $2) ON CONFLICT (name, sanity_thresholds) '
                                  'DO UPDATE SET name=EXCLUDED.name RETURNING id',
-                                 name)
-    return obs_id[0]
-
-
-async def db_run_insert(conn, name: str, obs_id: int, sanity_thresholds: json):
-    run_id = await conn.fetchrow('INSERT INTO "Run" (name, obs_id, sanity_thresholds) '
-                                 'VALUES($1, $2, $3) ON CONFLICT (name, obs_id, sanity_thresholds) '
-                                 'DO UPDATE SET name=EXCLUDED.name RETURNING id',
-                                 name, obs_id, sanity_thresholds)
+                                 name, sanity_thresholds)
     return run_id[0]
 
 
@@ -39,12 +31,16 @@ async def db_source_match(conn, run_id: int, detection: list):
                               'flag, unresolved FROM "Detection" as d, "Instance" as i WHERE '
                               'ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
                               '<= 3 * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '
-                              '(($1 - x)^2 + ($2 - y)^2)) AND '
+                              'COALESCE(NULLIF((($1 - x)^2 + ($2 - y)^2), 0), 1)) AND '
                               'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
                               '<= 3 * SQRT($6 ^ 2 + err_z ^ 2) AND '
-                              'x != $1 AND y != $2 AND z != $3 AND '
-                              'd.instance_id = i.id AND i.run_id = $7 FOR UPDATE OF d',
+                              'd.instance_id = i.id AND i.run_id = $7 ORDER BY d.id ASC FOR UPDATE OF d',
                               x, y, z, err_x, err_y, err_z, run_id)
+    for i, j in enumerate(result):
+        # do not want the original detection if it already exists
+        if j['x'] == x and j['y'] == y and j['z'] == z:
+            result.pop(i)
+            break
     return result
 
 
