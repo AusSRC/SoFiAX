@@ -74,7 +74,7 @@ def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, san
     return True
 
 
-async def match_merge_detections(conn, run_name: str, params: dict, sanity_thresholds: dict):
+async def match_merge_detections(conn, run_name: str, params: dict, sanity_thresholds: dict, cwd: str):
     try:
         flux = sanity_thresholds['flux']
         if not isinstance(flux, int):
@@ -104,10 +104,10 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
     output_dir = params['output.directory']
 
     if os.path.isabs(input_fits) is False:
-        raise ValueError('input.data requires absolute path')
+        input_fits = f"{cwd}/{os.path.basename(input_fits)}"
 
     if os.path.isabs(output_dir) is False:
-        raise ValueError('output.directory requires absolute path')
+        output_dir = f"{cwd}/{os.path.basename(output_dir)}"
 
     run_id = await db_run_insert(conn, run_name, json.dumps(sanity_thresholds))
 

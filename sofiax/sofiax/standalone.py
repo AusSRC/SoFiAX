@@ -26,6 +26,7 @@ async def run(config, run_name, param_list, sanity):
 
         logging.info(f'Processing {param_path}')
         params = await parse_sofia_param_file(param_path)
+        param_cwd = os.path.dirname(os.path.abspath(param_path))
         if execute == 1:
             logging.info(f'Executing Sofia {param_path}')
             sofia_cmd = f'{path} {param_path}'
@@ -34,12 +35,17 @@ async def run(config, run_name, param_list, sanity):
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
                 env={'SOFIA2_PATH': os.path.dirname(path)},
-                cwd=os.path.dirname(path))
+                cwd=param_cwd)
 
             stdout, stderr = await proc.communicate()
-            logging.info(f'Sofia complete {param_path}')
+            if proc.returncode == 0:
+                logging.info(f'Sofia complete {param_path}')
+            else:
+                err = f'Sofia completed with error: {proc.returncode}'
+                logging.error(err)
+                raise SystemError(err)
 
-        await match_merge_detections(conn, run_name, params, sanity)
+        await match_merge_detections(conn, run_name, params, sanity, param_cwd)
 
 
 async def main():
