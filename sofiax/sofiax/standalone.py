@@ -6,7 +6,7 @@ import argparse
 import sys
 import os
 
-from merge import match_merge_detections, parse_sofia_param_file, check_inputs
+from merge import match_merge_detections, parse_sofia_param_file, check_inputs, remove_output
 
 
 async def run(config, run_name, param_list, sanity):
@@ -27,8 +27,12 @@ async def run(config, run_name, param_list, sanity):
         logging.info(f'Processing {param_path}')
         params = await parse_sofia_param_file(param_path)
         param_cwd = os.path.dirname(os.path.abspath(param_path))
+
         if execute == 1:
+            await remove_output(params, param_cwd)
+
             logging.info(f'Executing Sofia {param_path}')
+
             sofia_cmd = f'{path} {param_path}'
             proc = await asyncio.create_subprocess_shell(
                 sofia_cmd,
@@ -41,8 +45,9 @@ async def run(config, run_name, param_list, sanity):
             if proc.returncode == 0:
                 logging.info(f'Sofia complete {param_path}')
             else:
-                err = f'Sofia completed with error: {proc.returncode}'
+                err = f'Sofia completed with returncode: {proc.returncode}'
                 logging.error(err)
+                logging.error(stderr)
                 raise SystemError(err)
 
         await match_merge_detections(conn, run_name, params, sanity, param_cwd)
@@ -87,7 +92,10 @@ async def main():
     task_list = [asyncio.create_task(run(config, args.name, args.param, sanity))
                  for _ in range(int(processes))]
 
-    await asyncio.gather(*task_list)
+    try:
+        await asyncio.gather(*task_list)
+    except Exception as e:
+        logging.exception(e)
 
 
 if __name__ == "__main__":

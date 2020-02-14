@@ -1,6 +1,8 @@
 import os
 import json
+import glob
 import random
+import asyncio
 import aiofiles
 import xmltodict
 import configparser
@@ -65,6 +67,28 @@ def check_inputs(sanity_thresholds: dict):
             raise ValueError('spectral_extent in sanity_thresholds is not a tuple of len(2)')
     except KeyError:
         raise ValueError('spectral_extent missing from sanity_thresholds')
+
+
+def remove_files(path: str):
+    file_list = glob.glob(path, recursive=True)
+    for file_path in file_list:
+        os.remove(file_path)
+
+
+async def remove_output(params: dict, cwd: str):
+    input_fits = params['input.data']
+    output_dir = params['output.directory']
+    output_filename = params['output.filename']
+
+    if os.path.isabs(output_dir) is False:
+        output_dir = f"{cwd}/{os.path.basename(output_dir)}"
+
+    if not output_filename:
+        output_filename = os.path.splitext(os.path.basename(input_fits))[0]
+
+    path = f"{c}/{output_filename}*"
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, remove_files, path)
 
 
 def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
