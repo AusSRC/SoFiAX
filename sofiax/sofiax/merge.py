@@ -2,6 +2,7 @@ import os
 import json
 import glob
 import random
+import shutil
 import asyncio
 import aiofiles
 import xmltodict
@@ -70,9 +71,12 @@ def check_inputs(sanity_thresholds: dict):
 
 
 def remove_files(path: str):
-    file_list = glob.glob(path, recursive=True)
+    file_list = glob.glob(path)
     for file_path in file_list:
-        os.remove(file_path)
+        if os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+        else:
+            os.remove(file_path)
 
 
 async def remove_output(params: dict, cwd: str):
