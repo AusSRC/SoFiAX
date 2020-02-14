@@ -86,7 +86,7 @@ async def remove_output(params: dict, cwd: str):
     if not output_filename:
         output_filename = os.path.splitext(os.path.basename(input_fits))[0]
 
-    path = f"{c}/{output_filename}*"
+    path = f"{output_dir}/{output_filename}*"
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, remove_files, path)
 
