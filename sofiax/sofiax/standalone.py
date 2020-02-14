@@ -47,8 +47,11 @@ async def run(config, run_name, param_list, sanity):
                 logging.error(stderr)
                 raise SystemError(err)
 
-        with await asyncpg.connect(user=username, password=password, database=name, host=host) as conn:
+        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
+        try:
             await match_merge_detections(conn, run_name, params, sanity, param_cwd)
+        finally:
+            await conn.close()
 
 
 async def main():
