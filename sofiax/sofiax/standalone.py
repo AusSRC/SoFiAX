@@ -18,9 +18,6 @@ async def run(config, run_name, param_list, sanity):
     execute = int(config['Sofia']['execute'])
     path = config['Sofia']['path']
 
-    conn = await asyncpg.connect(user=username, password=password,
-                                 database=name, host=host)
-
     while len(param_list) > 0:
         param_path = param_list.pop(0)
 
@@ -50,7 +47,8 @@ async def run(config, run_name, param_list, sanity):
                 logging.error(stderr)
                 raise SystemError(err)
 
-        await match_merge_detections(conn, run_name, params, sanity, param_cwd)
+        with await asyncpg.connect(user=username, password=password, database=name, host=host) as conn:
+            await match_merge_detections(conn, run_name, params, sanity, param_cwd)
 
 
 async def main():
