@@ -39,6 +39,34 @@ async def parse_sofia_param_file(sofia_param_path: str):
     return params
 
 
+def check_inputs(sanity_thresholds: dict):
+
+    try:
+        flux = sanity_thresholds['flux']
+        if not isinstance(flux, int):
+            raise ValueError('flux in sanity_thresholds is not an int')
+    except KeyError:
+        raise ValueError('flux missing from sanity_thresholds')
+
+    try:
+        spatial = sanity_thresholds['spatial_extent']
+        if not isinstance(spatial, tuple):
+            raise ValueError('spatial_extent in sanity_thresholds is not a tuple')
+        if len(spatial) != 2:
+            raise ValueError('spatial_extent in sanity_thresholds is not a tuple of len(2)')
+    except KeyError:
+        raise ValueError('spatial_extent missing from sanity_thresholds')
+
+    try:
+        spectral = sanity_thresholds['spectral_extent']
+        if not isinstance(spectral, tuple):
+            raise ValueError('spectral_extent in sanity_thresholds is not a tuple')
+        if len(spectral) != 2:
+            raise ValueError('spectral_extent in sanity_thresholds is not a tuple of len(2)')
+    except KeyError:
+        raise ValueError('spectral_extent missing from sanity_thresholds')
+
+
 def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
     f1, f2 = flux
     diff = abs(f1 - f2) * 100 / ((abs(f2) + abs(f2)) / 2)
@@ -75,30 +103,8 @@ def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, san
 
 
 async def match_merge_detections(conn, run_name: str, params: dict, sanity_thresholds: dict, cwd: str):
-    try:
-        flux = sanity_thresholds['flux']
-        if not isinstance(flux, int):
-            raise ValueError('flux in sanity_thresholds is not an int')
-    except KeyError:
-        raise ValueError('flux missing from sanity_thresholds')
 
-    try:
-        spatial = sanity_thresholds['spatial_extent']
-        if not isinstance(spatial, tuple):
-            raise ValueError('spatial_extent in sanity_thresholds is not a tuple')
-        if len(spatial) != 2:
-            raise ValueError('spatial_extent in sanity_thresholds is not a tuple of len(2)')
-    except KeyError:
-        raise ValueError('spatial_extent missing from sanity_thresholds')
-
-    try:
-        spectral = sanity_thresholds['spectral_extent']
-        if not isinstance(spectral, tuple):
-            raise ValueError('spectral_extent in sanity_thresholds is not a tuple')
-        if len(spectral) != 2:
-            raise ValueError('spectral_extent in sanity_thresholds is not a tuple of len(2)')
-    except KeyError:
-        raise ValueError('spectral_extent missing from sanity_thresholds')
+    check_inputs(sanity_thresholds)
 
     input_fits = params['input.data']
     output_dir = params['output.directory']

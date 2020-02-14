@@ -6,7 +6,7 @@ import argparse
 import sys
 import os
 
-from merge import match_merge_detections, parse_sofia_param_file
+from merge import match_merge_detections, parse_sofia_param_file, check_inputs
 
 
 async def run(config, run_name, param_list, sanity):
@@ -62,9 +62,9 @@ async def main():
     parser.add_argument('--name', dest='name', type=str, required=True,
                         help='unique run name')
     parser.add_argument('--spatial_extent', dest='spatial', nargs='+', type=int, required=True,
-                        help='sanity threshold for spatial extents (%)')
+                        help='sanity threshold for spatial extents (min% max%)')
     parser.add_argument('--spectral_extent', dest='spectral', nargs='+', type=int, required=True,
-                        help='sanity threshold for spectral extents (%)')
+                        help='sanity threshold for spectral extents (min% max%)')
     parser.add_argument('--flux', dest='flux', type=int, required=True,
                         help='sanity threshold for flux (%)')
     parser.add_argument('-c', '--conf', dest='conf', required=True,
@@ -81,6 +81,8 @@ async def main():
     sanity = {'flux': args.flux,
               'spatial_extent': tuple(args.spatial),
               'spectral_extent': tuple(args.spectral)}
+
+    check_inputs(sanity)
 
     task_list = [asyncio.create_task(run(config, args.name, args.param, sanity))
                  for _ in range(int(processes))]
