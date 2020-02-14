@@ -74,7 +74,7 @@ def remove_files(path: str):
     file_list = glob.glob(path)
     for file_path in file_list:
         if os.path.isdir(file_path):
-            shutil.rmtree(file_path)
+            shutil.rmtree(file_path, ignore_errors=True)
         else:
             os.remove(file_path)
 
