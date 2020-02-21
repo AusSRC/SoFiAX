@@ -97,7 +97,7 @@ async def main():
         await asyncio.gather(*task_list)
     except Exception as e:
         logging.exception(e)
-
+        sys.exit(1)
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
