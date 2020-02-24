@@ -201,12 +201,12 @@ class InstanceAdminInline(admin.TabularInline):
 class InstanceAdmin(admin.ModelAdmin):
     model = Instance
     list_display = ('filename', 'run', 'run_date', 'boundary')
-    exclude = ['parameters']
     readonly_fields = list_display
     raw_id_fields = ['run']
 
     def get_queryset(self, request):
-        qs = super(InstanceAdmin, self).get_queryset(request).select_related('run')
+        qs = super(InstanceAdmin, self).get_queryset(request).select_related('run').\
+            only('filename', 'run', 'run_date', 'boundary')
         return qs
 
     def has_add_permission(self, request, obj=None):
