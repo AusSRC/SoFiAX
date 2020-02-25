@@ -79,9 +79,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'sofiadb',
         'USER': 'sofia_user',
-        'PASSWORD': 'sofia_user',
-        'HOST': 'localhost',
-        'PORT': '',
+        'PASSWORD': '',
+        'HOST': 'wallaby.aussrc.org',
+        'PORT': '5432',
     }
 }
 
@@ -123,3 +123,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# as declared in NginX conf, it must match /opt/services/sofia_web_app/static/
+STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
+
+# do the same for media files, it must match /opt/services/sofia_web_app/media/
+MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
