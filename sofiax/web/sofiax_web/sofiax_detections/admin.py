@@ -13,7 +13,7 @@ class DetectionAdmin(admin.ModelAdmin):
     model = Detection
     show_change_link = True
     list_display = ('id', 'run', 'name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50')
-    search_fields = ['run__name']
+    search_fields = ['run__name', 'name']
 
     def get_queryset(self, request):
         qs = super(DetectionAdmin, self).get_queryset(request).select_related('run')
