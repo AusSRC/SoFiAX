@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+
+  sofia_web_app:
+    letsencrypt:
+      image: linuxserver/letsencrypt
+      container_name: letsencrypt
+      cap_add:
+        - NET_ADMIN
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=Perth/Australia
+        - URL=wallaby.aussrc.org
+        - SUBDOMAINS=
+        - VALIDATION=http
+        - EMAIL=dave.pallot@icrar.org
+
+      ports:
+        - 443:443
+        - 80:80 #optional
+      restart: unless-stopped
+
+      volumes:
+        - .:/opt/services/sofia_web_app/src
+        - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
+        - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
+      networks:
+        - nginx_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.nginx
+    ports:
+      - 80:8000
+      - 443:443
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
+      - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
+    depends_on:  # <-- wait for sofia_web_app to be "ready" before starting this service
+      - sofia_web_app
+    networks:
+      - nginx_network
+
+networks:
+  nginx_network:
+    driver: bridge
+
+volumes:
+  static_volume:  # <-- declare the static volume
+  media_volume:  # <-- declare the media volume
