@@ -3,16 +3,15 @@ version: '3'
 services:
 
   sofia_web_app:
-    sofia_web_app:
-      build:
-        context: .
-        dockerfile: ./Dockerfile.gun
-      volumes:
-        - .:/opt/services/sofia_web_app/src
-        - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
-        - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
-      networks:
-        - nginx_network
+    build:
+      context: .
+      dockerfile: Dockerfile.gun
+    volumes:
+      - .:/opt/services/sofia_web_app/src
+      - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
+      - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
+    networks:
+      - nginx_network
 
   nginx:
     image: linuxserver/letsencrypt
@@ -30,10 +29,11 @@ services:
 
     ports:
       - 443:443
-      - 80:8000
+      - 80:80
     restart: unless-stopped
 
     volumes:
+      - - ./config/nginx/default.conf:/config/default
       - .:/opt/services/sofia_web_app/src
       - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
       - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
