@@ -25,7 +25,7 @@ SECRET_KEY = '(8hp!jg#&n!#g&5r@h(gb*=kte##+z#iwkz9enz7+v(igt-^9@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['wallaby.aussrc.org']
 
 
 # Application definition
@@ -69,7 +69,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'sofiax_web.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
