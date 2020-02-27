@@ -33,7 +33,7 @@ services:
     restart: unless-stopped
 
     volumes:
-      - - ./config/nginx/default.conf:/config/default
+      - ./config/nginx/default.conf:/config/nginx/site-confs/default
       - .:/opt/services/sofia_web_app/src
       - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
       - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
