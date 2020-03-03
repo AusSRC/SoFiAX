@@ -15,7 +15,6 @@ services:
 
   nginx:
     image: linuxserver/letsencrypt
-    container_name: letsencrypt
     cap_add:
       - NET_ADMIN
     environment:
