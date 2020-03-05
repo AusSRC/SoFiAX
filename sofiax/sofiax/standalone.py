@@ -1,3 +1,5 @@
+#!python
+
 import asyncio
 import asyncpg
 import logging
