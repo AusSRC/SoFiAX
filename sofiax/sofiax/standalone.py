@@ -68,11 +68,11 @@ async def main():
     parser.add_argument('--name', dest='name', type=str, required=True,
                         help='unique run name')
     parser.add_argument('--spatial_extent', dest='spatial', nargs='+', type=int, required=True,
-                        help='sanity threshold for spatial extents (min% max%)')
+                        help='sanity threshold for spatial extents (min%% max%%)')
     parser.add_argument('--spectral_extent', dest='spectral', nargs='+', type=int, required=True,
-                        help='sanity threshold for spectral extents (min% max%)')
+                        help='sanity threshold for spectral extents (min%% max%%)')
     parser.add_argument('--flux', dest='flux', type=int, required=True,
-                        help='sanity threshold for flux (%)')
+                        help='sanity threshold for flux (%%)')
     parser.add_argument('-c', '--conf', dest='conf', required=True,
                         help='configuration file')
     parser.add_argument('-p', '--param', dest='param', nargs='+', required=True,
