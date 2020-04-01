@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, reverse_lazy
+from django.urls import path, reverse_lazy, include
 from django.views.generic.base import RedirectView
 
 admin.site.site_header = "WALLABY - the ASKAP HI All-Sky Survey"
@@ -22,6 +22,7 @@ admin.site.site_title = "WALLABY Portal"
 admin.site.index_title = "Welcome to the WALLABY Portal"
 
 urlpatterns = [
+    path('sofiax_detections/', include('sofiax_detections.urls')),
     path('', RedirectView.as_view(url=reverse_lazy('admin:index'))),
     path('admin/', admin.site.urls),
 ]

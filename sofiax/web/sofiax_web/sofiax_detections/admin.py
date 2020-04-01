@@ -12,8 +12,15 @@ from .models import Run, Instance, Detection, UnresolvedDetection
 class DetectionAdmin(admin.ModelAdmin):
     model = Detection
     show_change_link = True
-    list_display = ('id', 'run', 'name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50')
+    list_display = ('id', 'run', 'name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50',
+                    'detection_products_download')
     search_fields = ['run__name', 'name']
+
+    def detection_products_download(self, obj):
+        url = reverse('detection_products')
+        return format_html("<a href='%s?id=%s'>%s</a>" % (url, obj.id, 'Products'))
+
+    detection_products_download.short_description = 'Products'
 
     def get_queryset(self, request):
         qs = super(DetectionAdmin, self).get_queryset(request).select_related('run')
@@ -135,12 +142,18 @@ class UnresolvedDetectionAdmin(admin.ModelAdmin):
 class DetectionAdminInline(admin.TabularInline):
     model = Detection
     show_change_link = True
-    list_display = ('name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50')
+    list_display = ('name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50', 'detection_products_download')
     exclude = ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max', 'n_pix', 'f_min', 'f_max', 'rel', 'rms',
                'ell_pa', 'ell3s_maj', 'ell3s_min', 'ell3s_ps', 'err_x', 'err_y', 'err_z', 'err_f_sum',
                'ra', 'dec', 'freq', 'flag', 'unresolved', 'instance']
     readonly_fields = list_display
     fk_name = 'run'
+
+    def detection_products_download(self, obj):
+        url = reverse('detection_products')
+        return format_html("<a href='%s?id=%s'>%s</a>" % (url, obj.id, 'Products'))
+
+    detection_products_download.short_description = 'Products'
 
     def get_queryset(self, request):
         qs = super(DetectionAdminInline, self).get_queryset(request)
@@ -184,7 +197,7 @@ class UnresolvedDetectionAdminInline(admin.TabularInline):
 class InstanceAdminInline(admin.TabularInline):
     model = Instance
     show_change_link = True
-    list_display = ('filename', 'run_date', 'boundary')
+    list_display = ('id', 'filename', 'run_date', 'boundary', 'instance_products_download')
     exclude = ['parameters']
     readonly_fields = list_display
 
@@ -192,6 +205,12 @@ class InstanceAdminInline(admin.TabularInline):
         qs = super(InstanceAdminInline, self).get_queryset(request).select_related('run').\
             only('filename', 'run', 'run_date', 'boundary')
         return qs
+
+    def instance_products_download(self, obj):
+        url = reverse('instance_products')
+        return format_html("<a href='%s?id=%s'>%s</a>" % (url, obj.id, 'Products'))
+
+    instance_products_download.short_description = 'Products'
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -205,7 +224,7 @@ class InstanceAdminInline(admin.TabularInline):
 
 class InstanceAdmin(admin.ModelAdmin):
     model = Instance
-    list_display = ('filename', 'run', 'run_date', 'boundary')
+    list_display = ('id', 'filename', 'run', 'run_date', 'boundary', 'instance_products_download')
     readonly_fields = list_display
     raw_id_fields = ['run']
 
@@ -213,6 +232,12 @@ class InstanceAdmin(admin.ModelAdmin):
         qs = super(InstanceAdmin, self).get_queryset(request).select_related('run').\
             only('filename', 'run', 'run_date', 'boundary')
         return qs
+
+    def instance_products_download(self, obj):
+        url = reverse('instance_products')
+        return format_html("<a href='%s?id=%s'>%s</a>" % (url, obj.id, 'Products'))
+
+    instance_products_download.short_description = 'Products'
 
     def has_add_permission(self, request, obj=None):
         return False
