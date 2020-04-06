@@ -42,7 +42,7 @@ class Detection(models.Model):
     ell_pa = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     ell3s_maj = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     ell3s_min = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
-    ell3s_ps = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
+    ell3s_pa = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     kin_pa = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     err_x = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     err_y = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
@@ -52,6 +52,11 @@ class Detection(models.Model):
     dec = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     freq = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     flag = models.IntegerField(blank=True, null=True)
+    l = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
+    b = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
+    v_rad = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
+    v_opt = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
+    v_app = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     unresolved = models.BooleanField()
 
     def __str__(self):

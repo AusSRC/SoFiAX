@@ -144,8 +144,8 @@ class DetectionAdminInline(admin.TabularInline):
     show_change_link = True
     list_display = ('name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50', 'detection_products_download')
     exclude = ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max', 'n_pix', 'f_min', 'f_max', 'rel', 'rms',
-               'ell_pa', 'ell3s_maj', 'ell3s_min', 'ell3s_ps', 'kin_pa', 'err_x', 'err_y', 'err_z', 'err_f_sum',
-               'ra', 'dec', 'freq', 'flag', 'unresolved', 'instance']
+               'ell_pa', 'ell3s_maj', 'ell3s_min', 'ell3s_pa', 'kin_pa', 'err_x', 'err_y', 'err_z', 'err_f_sum',
+               'ra', 'dec', 'freq', 'flag', 'unresolved', 'instance',  'l', 'b', 'v_rad', 'v_opt', 'v_app']
     readonly_fields = list_display
     fk_name = 'run'
 
@@ -174,8 +174,8 @@ class UnresolvedDetectionAdminInline(admin.TabularInline):
     show_change_link = True
     list_display = ('name', 'x', 'y', 'z', 'f_sum', 'ell_maj', 'ell_min', 'w20', 'w50')
     exclude = ['x_min', 'x_max', 'y_min', 'y_max', 'z_min', 'z_max', 'n_pix', 'f_min', 'f_max', 'rel', 'rms',
-               'ell_pa', 'ell3s_maj', 'ell3s_min', 'ell3s_ps', 'kin_pa', 'err_x', 'err_y', 'err_z', 'err_f_sum',
-               'ra', 'dec', 'freq', 'flag', 'unresolved', 'instance']
+               'ell_pa', 'ell3s_maj', 'ell3s_min', 'ell3s_pa', 'kin_pa', 'err_x', 'err_y', 'err_z', 'err_f_sum',
+               'ra', 'dec', 'freq', 'flag', 'unresolved', 'instance', 'l', 'b', 'v_rad', 'v_opt', 'v_app']
     readonly_fields = list_display
     ordering = ('x',)
     fk_name = 'run'

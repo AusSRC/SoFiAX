@@ -140,27 +140,36 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
 
     instance = await db_instance_upsert(conn, instance)
 
+    detect_names = []
+    fields = cat['VOTABLE']['RESOURCE']['TABLE']['FIELD']
+    for _, j in enumerate(fields):
+        detect_names.append(j['@name'])
+
     tr = cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']
     if not isinstance(tr, list):
         tr = [tr]
 
     for _, j in enumerate(tr):
-        detection = j['TD']
-        flag = int(detection[16])
+        detect_dict = {}
+        for i, item in enumerate(j['TD']):
+            try:
+                detect_dict[detect_names[i]] = float(item)
+            except ValueError:
+                detect_dict[detect_names[i]] = item
+
+        flag = detect_dict['flag']
         # only check 0 or 4 flagged detections, throw the others away
         if flag not in [0, 4]:
             continue
+
         # remove id from detection list
-        detect_id = detection[1]
-        del detection[1]
-        # cast strings onto values
-        for i in range(1, len(detection)):
-            detection[i] = float(detection[i])
+        detect_id = int(detect_dict['id'])
+        del detect_dict['id']
 
         # adjust x, y, z to absolute terms based on region applied
-        detection[1] = detection[1] + instance.boundary[0]
-        detection[2] = detection[2] + instance.boundary[2]
-        detection[3] = detection[3] + instance.boundary[4]
+        detect_dict['x'] = detect_dict['x'] + instance.boundary[0]
+        detect_dict['y'] = detect_dict['y'] + instance.boundary[2]
+        detect_dict['z'] = detect_dict['z'] + instance.boundary[4]
 
         path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_cube.fits"
         cube_bytes = await _get_file_bytes(path)
@@ -178,47 +187,47 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         spec_bytes = await _get_file_bytes(path)
 
         async with conn.transaction():
-            result = await db_source_match(conn, run.run_id, detection)
+            result = await db_source_match(conn, run.run_id, detect_dict)
             result_len = len(result)
             if result_len == 0:
-                logging.info(f"No duplicates, Name: {detection[0]}")
-                await db_detection_insert(conn, run.run_id, instance.instance_id, detection,
+                logging.info(f"No duplicates, Name: {detect_dict['name']}")
+                await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                           mom2_bytes, chan_bytes, spec_bytes)
             else:
-                logging.info(f"Duplicates, Name: {detection[0]} Details: {result_len} hit(s)")
+                logging.info(f"Duplicates, Name: {detect_dict['name']} Details: {result_len} hit(s)")
                 resolved = False
                 for db_detect in result:
-                    flux = (detection[13], db_detect['f_sum'])
-                    spatial = (detection[19], db_detect['ell_maj'],
-                               detection[20], db_detect['ell_min'])
-                    spectral = (detection[17], db_detect['w20'],
-                                detection[18], db_detect['w50'])
+                    flux = (detect_dict['f_sum'], db_detect['f_sum'])
+                    spatial = (detect_dict['ell_maj'], db_detect['ell_maj'],
+                               detect_dict['ell_min'], db_detect['ell_min'])
+                    spectral = (detect_dict['w20'], db_detect['w20'],
+                                detect_dict['w50'], db_detect['w50'])
                     check_result = sanity_check(flux, spatial, spectral, run.sanity_thresholds)
                     if check_result:
-                        detect_flag = detection[15]
+                        detect_flag = detect_dict['flag']
                         db_detect_flag = db_detect['flag']
                         if detect_flag == 0 and db_detect_flag == 4:
-                            logging.info(f"Replacing, Name: {detection[0]} Details: flag 4 with flag 0")
+                            logging.info(f"Replacing, Name: {detect_dict['name']} Details: flag 4 with flag 0")
                             await db_delete_detection(conn, db_detect['id'])
-                            await db_detection_insert(conn, run.run_id, instance.instance_id, detection, cube_bytes,
+                            await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict, cube_bytes,
                                                       mask_bytes, mom0_bytes, mom1_bytes,
                                                       mom2_bytes, chan_bytes, spec_bytes,
                                                       db_detect['unresolved'])
                         elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:
                             if bool(random.getrandbits(1)) is True:
-                                logging.info(f"Replacing, Name: {detection[0]} Details: flag 0 with "
+                                logging.info(f"Replacing, Name: {detect_dict['name']} Details: flag 0 with "
                                              f"flag 0 or flag 4 with flag 4")
                                 await db_delete_detection(conn, db_detect['id'])
-                                await db_detection_insert(conn, run.run_id, instance.instance_id, detection,
+                                await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
                                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                                           mom2_bytes, chan_bytes, spec_bytes,
                                                           db_detect['unresolved'])
                         resolved = True
                         break
                 if resolved is False:
-                    logging.info(f"Not Resolved, Name: {detection[0]} Details: Setting to unresolved")
-                    await db_detection_insert(conn, run.run_id, instance.instance_id, detection,
+                    logging.info(f"Not Resolved, Name: {detect_dict['name']} Details: Setting to unresolved")
+                    await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
                                               cube_bytes, mask_bytes, mom0_bytes,
                                               mom1_bytes, mom2_bytes, chan_bytes, spec_bytes,
                                               True)
