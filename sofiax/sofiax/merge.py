@@ -1,5 +1,4 @@
 import os
-import json
 import glob
 import random
 import shutil
@@ -8,12 +7,13 @@ import aiofiles
 import xmltodict
 import configparser
 import logging
+import asyncpg
 
 from datetime import datetime
 
-from db import db_run_insert, db_instance_insert, \
+from db import db_run_upsert, db_instance_upsert, \
     db_detection_insert, db_source_match, \
-    db_delete_detection, db_update_detection_unresolved
+    db_delete_detection, db_update_detection_unresolved, Run, Instance
 
 
 async def _get_file_bytes(path: str, mode: str = 'rb'):
@@ -40,34 +40,6 @@ async def parse_sofia_param_file(sofia_param_path: str):
     for key in config['dummy_section']:
         params[key] = config['dummy_section'][key]
     return params
-
-
-def check_inputs(sanity_thresholds: dict):
-
-    try:
-        flux = sanity_thresholds['flux']
-        if not isinstance(flux, int):
-            raise ValueError('flux in sanity_thresholds is not an int')
-    except KeyError:
-        raise ValueError('flux missing from sanity_thresholds')
-
-    try:
-        spatial = sanity_thresholds['spatial_extent']
-        if not isinstance(spatial, tuple):
-            raise ValueError('spatial_extent in sanity_thresholds is not a tuple')
-        if len(spatial) != 2:
-            raise ValueError('spatial_extent in sanity_thresholds is not a tuple of len(2)')
-    except KeyError:
-        raise ValueError('spatial_extent missing from sanity_thresholds')
-
-    try:
-        spectral = sanity_thresholds['spectral_extent']
-        if not isinstance(spectral, tuple):
-            raise ValueError('spectral_extent in sanity_thresholds is not a tuple')
-        if len(spectral) != 2:
-            raise ValueError('spectral_extent in sanity_thresholds is not a tuple of len(2)')
-    except KeyError:
-        raise ValueError('spectral_extent missing from sanity_thresholds')
 
 
 def remove_files(path: str):
@@ -130,12 +102,10 @@ def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, san
     return True
 
 
-async def match_merge_detections(conn, run_name: str, params: dict, sanity_thresholds: dict, cwd: str):
+async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
 
-    check_inputs(sanity_thresholds)
-
-    input_fits = params['input.data']
-    output_dir = params['output.directory']
+    input_fits = instance.params['input.data']
+    output_dir = instance.params['output.directory']
 
     if os.path.isabs(input_fits) is False:
         input_fits = f"{cwd}/{os.path.basename(input_fits)}"
@@ -143,21 +113,16 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
     if os.path.isabs(output_dir) is False:
         output_dir = f"{cwd}/{os.path.basename(output_dir)}"
 
-    run_id = await db_run_insert(conn, run_name, json.dumps(sanity_thresholds))
-
-    output_filename = params['output.filename']
+    output_filename = instance.params['output.filename']
     if not output_filename:
         output_filename = os.path.splitext(os.path.basename(input_fits))[0]
 
-    # sofia reliability plot
-    sofia_reliability = await _get_file_bytes(f"{output_dir}/{output_filename}_rel.eps")
-
     vo_table = f"{output_dir}/{output_filename}_cat.xml"
     content = await _get_file_bytes(vo_table, mode='r')
-    o = xmltodict.parse(content)
+    cat = xmltodict.parse(content)
 
     run_date = None
-    for _, j in enumerate(o['VOTABLE']['RESOURCE']['PARAM']):
+    for _, j in enumerate(cat['VOTABLE']['RESOURCE']['PARAM']):
         if j['@name'] == 'Time':
             run_date = j['@value']
             break
@@ -165,13 +130,21 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
     if run_date is None:
         raise AttributeError('Run date not found in votable')
 
-    sofia_boundary = [int(i) for i in params['input.region'].split(',')]
-    run_date_datetime = datetime.strptime(run_date, '%a, %d %b %Y, %H:%M:%S')
+    for _, j in enumerate(cat['VOTABLE']['RESOURCE']['PARAM']):
+        if j['@name'] == 'Creator':
+            instance.version = j['@value']
+            break
 
-    instance_id = await db_instance_insert(conn, run_id, run_date_datetime, output_filename, sofia_boundary,
-                                           None, sofia_reliability, None, json.dumps(params))
+    instance.run_date = datetime.strptime(run_date, '%a, %d %b %Y, %H:%M:%S')
+    instance.reliability_plot = await _get_file_bytes(f"{output_dir}/{output_filename}_rel.eps")
 
-    for _, j in enumerate(o['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']):
+    instance = await db_instance_upsert(conn, instance)
+
+    tr = cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']
+    if not isinstance(tr, list):
+        tr = [tr]
+
+    for _, j in enumerate(tr):
         detection = j['TD']
         flag = int(detection[16])
         # only check 0 or 4 flagged detections, throw the others away
@@ -185,9 +158,9 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
             detection[i] = float(detection[i])
 
         # adjust x, y, z to absolute terms based on region applied
-        detection[1] = detection[1] + sofia_boundary[0]
-        detection[2] = detection[2] + sofia_boundary[2]
-        detection[3] = detection[3] + sofia_boundary[4]
+        detection[1] = detection[1] + instance.boundary[0]
+        detection[2] = detection[2] + instance.boundary[2]
+        detection[3] = detection[3] + instance.boundary[4]
 
         path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_cube.fits"
         cube_bytes = await _get_file_bytes(path)
@@ -205,11 +178,11 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
         spec_bytes = await _get_file_bytes(path)
 
         async with conn.transaction():
-            result = await db_source_match(conn, run_id, detection)
+            result = await db_source_match(conn, run.run_id, detection)
             result_len = len(result)
             if result_len == 0:
                 logging.info(f"No duplicates, Name: {detection[0]}")
-                await db_detection_insert(conn, run_id, instance_id, detection,
+                await db_detection_insert(conn, run.run_id, instance.instance_id, detection,
                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                           mom2_bytes, chan_bytes, spec_bytes)
             else:
@@ -221,14 +194,14 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
                                detection[20], db_detect['ell_min'])
                     spectral = (detection[17], db_detect['w20'],
                                 detection[18], db_detect['w50'])
-                    check_result = sanity_check(flux, spatial, spectral, sanity_thresholds)
+                    check_result = sanity_check(flux, spatial, spectral, run.sanity_thresholds)
                     if check_result:
                         detect_flag = detection[15]
                         db_detect_flag = db_detect['flag']
                         if detect_flag == 0 and db_detect_flag == 4:
                             logging.info(f"Replacing, Name: {detection[0]} Details: flag 4 with flag 0")
                             await db_delete_detection(conn, db_detect['id'])
-                            await db_detection_insert(conn, run_id, instance_id, detection, cube_bytes,
+                            await db_detection_insert(conn, run.run_id, instance.instance_id, detection, cube_bytes,
                                                       mask_bytes, mom0_bytes, mom1_bytes,
                                                       mom2_bytes, chan_bytes, spec_bytes,
                                                       db_detect['unresolved'])
@@ -237,7 +210,7 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
                                 logging.info(f"Replacing, Name: {detection[0]} Details: flag 0 with "
                                              f"flag 0 or flag 4 with flag 4")
                                 await db_delete_detection(conn, db_detect['id'])
-                                await db_detection_insert(conn, run_id, instance_id, detection,
+                                await db_detection_insert(conn, run.run_id, instance.instance_id, detection,
                                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                                           mom2_bytes, chan_bytes, spec_bytes,
                                                           db_detect['unresolved'])
@@ -245,8 +218,84 @@ async def match_merge_detections(conn, run_name: str, params: dict, sanity_thres
                         break
                 if resolved is False:
                     logging.info(f"Not Resolved, Name: {detection[0]} Details: Setting to unresolved")
-                    await db_detection_insert(conn, run_id, instance_id, detection,
+                    await db_detection_insert(conn, run.run_id, instance.instance_id, detection,
                                               cube_bytes, mask_bytes, mom0_bytes,
                                               mom1_bytes, mom2_bytes, chan_bytes, spec_bytes,
                                               True)
                     await db_update_detection_unresolved(conn, True, [i['id'] for i in result])
+
+
+async def run_merge(config, run_name, param_list, sanity):
+    host = config['Database']['hostname']
+    name = config['Database']['name']
+    username = config['Database']['username']
+    password = config['Database']['password']
+
+    execute = int(config['Sofia']['execute'])
+    path = config['Sofia']['path']
+
+    while len(param_list) > 0:
+        param_path = param_list.pop(0)
+
+        logging.info(f'Processing {param_path}')
+        params = await parse_sofia_param_file(param_path)
+        param_cwd = os.path.dirname(os.path.abspath(param_path))
+
+        input_fits = params['input.data']
+        boundary = [int(i) for i in params['input.region'].split(',')]
+
+        if os.path.isabs(input_fits) is False:
+            input_fits = f"{param_cwd}/{os.path.basename(input_fits)}"
+
+        output_filename = params['output.filename']
+        if not output_filename:
+            output_filename = os.path.splitext(os.path.basename(input_fits))[0]
+
+        run_date = datetime.now()
+
+        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
+        try:
+            run = Run(run_name, sanity)
+            run = await db_run_upsert(conn, run)
+            instance = Instance(run.run_id, run_date, output_filename, boundary, None, None, None,
+                                params, None, None, None, None)
+            instance = await db_instance_upsert(conn, instance)
+        finally:
+            await conn.close()
+
+        if execute == 1:
+            logging.info(f'Executing Sofia {param_path}')
+
+            sofia_cmd = f'{path} {param_path}'
+            proc = await asyncio.create_subprocess_shell(
+                sofia_cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env={'SOFIA2_PATH': os.path.dirname(path)},
+                cwd=param_cwd)
+
+            stdout, stderr = await proc.communicate()
+            instance.stdout = stdout
+            instance.stderr = stderr
+            instance.return_code = proc.returncode
+
+        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
+        try:
+            if instance.return_code == 0 or instance.return_code is None:
+                logging.info(f'Sofia completed: {param_path}')
+                await match_merge_detections(conn, run, instance, param_cwd)
+            else:
+                err = f'Sofia completed with return code: {instance.return_code}'
+                await db_instance_upsert(conn, instance)
+
+                logging.error(err)
+                logging.error(instance.stderr)
+
+                # no source(s) found, gracefully exit
+                if instance.return_code == 8:
+                    return
+
+                raise SystemError(err)
+
+        finally:
+            await conn.close()

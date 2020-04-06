@@ -43,6 +43,7 @@ class Detection(models.Model):
     ell3s_maj = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     ell3s_min = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     ell3s_ps = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
+    kin_pa = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     err_x = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     err_y = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
     err_z = models.DecimalField(max_digits=65535, decimal_places=12, blank=True, null=True)
@@ -200,6 +201,10 @@ class Instance(models.Model):
     reliability_plot = models.BinaryField(blank=True, null=True)
     log = models.BinaryField(blank=True, null=True)
     parameters = models.TextField()  # This field type is a guess.
+    return_code = models.IntegerField(null=True)
+    version = models.CharField(max_length=512, blank=True, null=True)
+    stdout = models.BinaryField(blank=True, null=True)
+    stderr = models.BinaryField(blank=True, null=True)
 
     def __unicode__(self):
         return f"{str(self.id)}"

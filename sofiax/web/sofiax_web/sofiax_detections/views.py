@@ -30,9 +30,20 @@ def instance_products(request):
 
     fh = io.BytesIO()
     with tarfile.open(fileobj=fh, mode='w:gz') as tar:
-        info = tarfile.TarInfo(f'{name}_rel.eps')
-        info.size = len(instance[0].reliability_plot)
-        tar.addfile(info, io.BytesIO(initial_bytes=instance[0].reliability_plot))
+        if instance[0].reliability_plot is not None:
+            info = tarfile.TarInfo(f'{name}_rel.eps')
+            info.size = len(instance[0].reliability_plot)
+            tar.addfile(info, io.BytesIO(initial_bytes=instance[0].reliability_plot))
+
+        if instance[0].stdout is not None:
+            info = tarfile.TarInfo(f'{name}_stdout.txt')
+            info.size = len(instance[0].stdout)
+            tar.addfile(info, io.BytesIO(initial_bytes=instance[0].stdout))
+
+        if instance[0].stderr is not None:
+            info = tarfile.TarInfo(f'{name}_stderr.txt')
+            info.size = len(instance[0].stderr)
+            tar.addfile(info, io.BytesIO(initial_bytes=instance[0].stderr))
 
     data = fh.getvalue()
     size = len(data)
