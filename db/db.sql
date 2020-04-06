@@ -21,6 +21,10 @@ CREATE TABLE "Instance" (
   "reliability_plot" bytea,
   "log" bytea,
   "parameters" jsonb NOT NULL,
+  "version" varchar,
+  "return_code" integer,
+  "stdout" bytea,
+  "stderr" bytea,
   unique ("run_id", "filename", "boundary")
 );
 
