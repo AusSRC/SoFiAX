@@ -256,8 +256,13 @@ class InstanceAdmin(admin.ModelAdmin):
 
 class RunAdmin(admin.ModelAdmin):
     model = Run
-    list_display = ('name', 'sanity_thresholds', 'run_link')
+    list_display = ('id', 'name', 'sanity_thresholds', 'run_catalog', 'run_link')
     inlines = (UnresolvedDetectionAdminInline, DetectionAdminInline, InstanceAdminInline, )
+
+    def run_catalog(self, obj):
+        url = reverse('run_catalog')
+        return format_html("<a href='%s?id=%s'>%s</a>" % (url, obj.id, 'Catalog'))
+    run_catalog.short_description = 'Catalog'
 
     def run_link(self, obj):
         opts = self.model._meta
@@ -280,7 +285,7 @@ class RunAdmin(admin.ModelAdmin):
 class RunAdminInline(admin.TabularInline):
     model = Run
     show_change_link = True
-    list_display = ['name', 'sanity_thresholds']
+    list_display = ['id', 'name', 'sanity_thresholds']
     fields = list_display
     readonly_fields = fields
 
