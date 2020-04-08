@@ -155,9 +155,14 @@ def _build_detection(detection):
         f'<TD>{detection.err_y}</TD>\n' \
         f'<TD>{detection.err_z}</TD>\n' \
         f'<TD>{detection.err_f_sum}</TD>\n' \
-        f'<TD>{detection.ra}</TD>\n' \
-        f'<TD>{detection.dec}</TD>\n' \
+        f'<TD>{"" if detection.ra is None else detection.ra}</TD>\n' \
+        f'<TD>{"" if detection.dec is None else detection.dec}</TD>\n' \
         f'<TD>{"" if detection.freq is None else detection.freq}</TD>\n' \
+        f'<TD>{"" if detection.l is None else detection.l}</TD>\n' \
+        f'<TD>{"" if detection.b is None else detection.b}</TD>\n' \
+        f'<TD>{"" if detection.v_rad is None else detection.v_rad}</TD>\n' \
+        f'<TD>{"" if detection.v_opt is None else detection.v_opt}</TD>\n' \
+        f'<TD>{"" if detection.v_app is None else detection.v_app}</TD>\n' \
         f'</TR>\n'
 
     return det
@@ -209,6 +214,11 @@ def _build_catalog(detections, date, version):
         f'<FIELD datatype="double" name="ra" unit="deg" ucd="pos.eq.ra"/>\n' \
         f'<FIELD datatype="double" name="dec" unit="deg" ucd="pos.eq.dec"/>\n' \
         f'<FIELD datatype="double" name="freq" unit="Hz" ucd="em.freq"/>\n' \
+        f'<FIELD datatype="double" name="l" unit="deg" ucd="pos.galactic.lon"/>\n'\
+        f'<FIELD datatype="double" name="b" unit="deg" ucd="pos.galactic.lat"/>\n' \
+        f'<FIELD datatype="double" name="v_rad" unit="m/s" ucd="spect.dopplerVeloc.radio"/>\n' \
+        f'<FIELD datatype="double" name="v_opt" unit="m/s" ucd="spect.dopplerVeloc.opt"/>\n' \
+        f'<FIELD datatype="double" name="v_app" unit="m/s" ucd="spect.dopplerVeloc"/>\n' \
         f'<DATA>\n' \
         f'<TABLEDATA>\n' \
         f'{"".join([_build_detection(detection) for detection in detections])}' \
@@ -239,7 +249,7 @@ def run_catalog(request):
         return HttpResponse('no detections found.', status=404)
 
     instance = Instance.objects.filter(run=run_id).order_by('-run_date').first()
-    if not detections:
+    if not instance:
         return HttpResponse('no instance found.', status=404)
 
     cat = _build_catalog(detections, instance.run_date, instance.version)
