@@ -17,7 +17,7 @@ services:
 
   sofiax_nginx:
     image: linuxserver/letsencrypt
-    container_name: sofiax_ngnix
+    container_name: sofiax_nginx
     cap_add:
       - NET_ADMIN
     environment:
@@ -28,7 +28,6 @@ services:
       - SUBDOMAINS=
       - VALIDATION=http
       - EMAIL=dave.pallot@icrar.org
-
     ports:
       - 443:443
       - 80:80
@@ -57,6 +56,7 @@ services:
 
 networks:
   sofiax_network:
+    name: sofiax_network
     driver: bridge
 
 volumes:
