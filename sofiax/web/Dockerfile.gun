@@ -1,21 +1,15 @@
-# start from an official image
 FROM python:3.8
 
-# arbitrary location choice: you can change the directory
 RUN mkdir -p /opt/services/sofia_web_app/src
 WORKDIR /opt/services/sofia_web_app/src
 
-# install our two dependencies
 RUN pip install gunicorn django
 
-# copy our project code
 COPY . /opt/services/sofia_web_app/src
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 RUN python sofiax_web/manage.py collectstatic --no-input
 
-# expose the port 8000
 EXPOSE 8000
 
-# define the default command to run when starting the container
 CMD ["gunicorn", "--chdir", "sofiax_web", "--bind", ":8000", "sofiax_web.wsgi:application"]
