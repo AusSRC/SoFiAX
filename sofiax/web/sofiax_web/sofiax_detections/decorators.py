@@ -39,6 +39,9 @@ def action_form(form_class=None):
 
 def basicauth(view):
     def wrap(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return view(request, *args, **kwargs)
+
         if 'HTTP_AUTHORIZATION' in request.META:
             auth = request.META['HTTP_AUTHORIZATION'].split()
             if len(auth) == 2:
@@ -51,10 +54,6 @@ def basicauth(view):
 
         response = HttpResponse()
         response.status_code = 401
-        response['WWW-Authenticate'] = 'Basic realm="{}"'
-        #response['WWW-Authenticate'] = 'Basic realm="{}"'.format(
-        #    settings.BASIC_AUTH_REALM
-        #
-        #)
+        response['WWW-Authenticate'] = 'Basic realm="Wallaby VO"'
         return response
     return wrap
