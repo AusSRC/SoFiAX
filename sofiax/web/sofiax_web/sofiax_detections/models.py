@@ -185,7 +185,7 @@ class Detection(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'Detection'
+        db_table = 'detection'
         ordering = ("x",)
         unique_together = (('ra', 'dec', 'freq', 'instance', 'run'),)
 
@@ -219,7 +219,7 @@ class Instance(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'Instance'
+        db_table = 'instance'
         unique_together = (('run', 'filename', 'boundary'),)
 
 
@@ -236,7 +236,7 @@ class Products(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'Products'
+        db_table = 'products'
         unique_together = (('detection',),)
 
 
@@ -250,7 +250,7 @@ class Run(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'Run'
+        db_table = 'run'
         unique_together = (('name', 'sanity_thresholds'),)
 
 

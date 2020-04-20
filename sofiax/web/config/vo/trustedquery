@@ -1,0 +1,3 @@
+include dsn
+user = gavo
+password = gavo

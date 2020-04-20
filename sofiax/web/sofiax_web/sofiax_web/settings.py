@@ -25,7 +25,7 @@ SECRET_KEY = '(8hp!jg#&n!#g&5r@h(gb*=kte##+z#iwkz9enz7+v(igt-^9@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['wallaby.aussrc.org']
+ALLOWED_HOSTS = ['wallaby.aussrc.org', 'localhost']
 
 
 # Application definition
@@ -76,10 +76,13 @@ WSGI_APPLICATION = 'sofiax_web.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'OPTIONS': {
+            'options': '-c search_path=wallaby'
+        },
         'NAME': 'sofiadb',
-        'USER': 'sofia_user',
-        'PASSWORD': '',
-        'HOST': 'wallaby.aussrc.org',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }

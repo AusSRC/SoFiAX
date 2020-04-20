@@ -1,5 +1,13 @@
-CREATE USER "sofia_user";
-ALTER USER "sofia_user" WITH PASSWORD 'sofia_user';
+CREATE USER "admin";
+ALTER USER "admin" WITH PASSWORD 'admin';
+ALTER USER "admin" WITH SUPERUSER;
 CREATE DATABASE sofiadb WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.utf8' LC_CTYPE = 'en_US.utf8';
-ALTER DATABASE sofiadb OWNER TO "sofia_user";
-GRANT ALL PRIVILEGES ON DATABASE sofiadb TO "sofia_user";
+ALTER DATABASE sofiadb OWNER TO "admin";
+CREATE USER "wallaby_user";
+ALTER USER "wallaby_user" WITH PASSWORD 'wallaby_user';
+CREATE USER "gavo";
+ALTER USER "gavo" WITH PASSWORD 'gavo';
+CREATE USER "gavoadmin";
+ALTER USER "gavoadmin" WITH PASSWORD 'gavoadmin';
+CREATE USER "untrusted";
+ALTER USER "untrusted" WITH PASSWORD 'untrusted';

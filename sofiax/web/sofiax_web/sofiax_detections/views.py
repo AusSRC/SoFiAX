@@ -4,6 +4,7 @@ import tarfile
 from django.http import HttpResponse
 from urllib.request import pathname2url
 from .models import Products, Instance, Detection
+from .decorators import basicauth
 
 
 def instance_products(request):
@@ -54,10 +55,11 @@ def instance_products(request):
     return response
 
 
-def detection_products(request):
-    if not request.user.is_authenticated:
-        return HttpResponse('Unauthorized', status=401)
+PRODUCTS = ['moment0', 'moment1', 'moment2', 'cube', 'mask', 'channels', 'spectrum']
 
+
+@basicauth
+def detection_products(request):
     detect_id = request.GET.get('id', None)
     if not detect_id:
         return HttpResponse('id does not exist.', status=400)
@@ -67,58 +69,94 @@ def detection_products(request):
     except ValueError:
         return HttpResponse('id is not an integer.', status=400)
 
-    product = Products.objects.filter(detection=detect_id).\
-        select_related('detection',
-                       'detection__instance',
-                       'detection__run').only('detection__name', 'detection__instance__id', 'detection__run__name',
-                                              'moment0', 'moment1', 'moment2', 'cube', 'mask', 'channels', 'spectrum')
+    product_arg = request.GET.get('product', None)
+    if product_arg is not None:
+        product_arg = product_arg.lower()
+        if product_arg not in PRODUCTS:
+            return HttpResponse('not a valid detection product.', status=400)
 
-    if not product:
-        return HttpResponse('products not found.', status=404)
+    if product_arg is None:
+        product = Products.objects.filter(detection=detect_id).\
+            select_related('detection',
+                           'detection__instance',
+                           'detection__run').only('detection__name', 'detection__instance__id', 'detection__run__name',
+                                                  'moment0', 'moment1', 'moment2', 'cube', 'mask', 'channels',
+                                                  'spectrum')
 
-    detect_name = product[0].detection.name
-    run_name = product[0].detection.run.name
-    inst_name = product[0].detection.instance.id
-    name = f"{run_name}_{inst_name}_{detect_name}"
-    name = pathname2url(name.replace(' ', '_'))
+        if not product:
+            return HttpResponse('products not found.', status=404)
 
-    fh = io.BytesIO()
-    with tarfile.open(fileobj=fh, mode='w:gz') as tar:
-        info = tarfile.TarInfo(f'{name}_moment0.fits')
-        info.size = len(product[0].moment0)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].moment0))
+        detect_name = product[0].detection.name
+        run_name = product[0].detection.run.name
+        inst_name = product[0].detection.instance.id
+        name = f"{run_name}_{inst_name}_{detect_name}"
+        name = pathname2url(name.replace(' ', '_'))
 
-        info = tarfile.TarInfo(f'{name}_moment1.fits')
-        info.size = len(product[0].moment1)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].moment1))
+        fh = io.BytesIO()
+        with tarfile.open(fileobj=fh, mode='w:gz') as tar:
+            info = tarfile.TarInfo(f'{name}_moment0.fits')
+            info.size = len(product[0].moment0)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].moment0))
 
-        info = tarfile.TarInfo(f'{name}_moment2.fits')
-        info.size = len(product[0].moment2)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].moment2))
+            info = tarfile.TarInfo(f'{name}_moment1.fits')
+            info.size = len(product[0].moment1)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].moment1))
 
-        info = tarfile.TarInfo(f'{name}_cube.fits')
-        info.size = len(product[0].cube)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].cube))
+            info = tarfile.TarInfo(f'{name}_moment2.fits')
+            info.size = len(product[0].moment2)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].moment2))
 
-        info = tarfile.TarInfo(f'{name}_mask.fits')
-        info.size = len(product[0].mask)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].mask))
+            info = tarfile.TarInfo(f'{name}_cube.fits')
+            info.size = len(product[0].cube)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].cube))
 
-        info = tarfile.TarInfo(f'{name}_channels.fits')
-        info.size = len(product[0].channels)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].channels))
+            info = tarfile.TarInfo(f'{name}_mask.fits')
+            info.size = len(product[0].mask)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].mask))
 
-        info = tarfile.TarInfo(f'{name}_spectrum.txt')
-        info.size = len(product[0].spectrum)
-        tar.addfile(info, io.BytesIO(initial_bytes=product[0].spectrum))
+            info = tarfile.TarInfo(f'{name}_channels.fits')
+            info.size = len(product[0].channels)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].channels))
 
-    data = fh.getvalue()
-    size = len(data)
+            info = tarfile.TarInfo(f'{name}_spectrum.txt')
+            info.size = len(product[0].spectrum)
+            tar.addfile(info, io.BytesIO(initial_bytes=product[0].spectrum))
 
-    response = HttpResponse(data, content_type='application/x-tar')
-    response['Content-Disposition'] = f'attachment; filename={name}.tar'
-    response['Content-Length'] = size
-    return response
+            data = fh.getvalue()
+            size = len(data)
+
+            response = HttpResponse(data, content_type='application/x-tar')
+            response['Content-Disposition'] = f'attachment; filename={name}.tar'
+            response['Content-Length'] = size
+            return response
+    else:
+        product = Products.objects.filter(detection=detect_id). \
+            select_related('detection',
+                           'detection__instance',
+                           'detection__run').only('detection__name', 'detection__instance__id', 'detection__run__name',
+                                                  product_arg)
+        if not product:
+            return HttpResponse('products not found.', status=404)
+
+        detect_name = product[0].detection.name
+        run_name = product[0].detection.run.name
+        inst_name = product[0].detection.instance.id
+        name = f"{run_name}_{inst_name}_{detect_name}"
+        name = pathname2url(name.replace(' ', '_'))
+
+        data = getattr(product[0], product_arg)
+        size = len(data)
+
+        content_type = 'image/fits'
+        ext = "fits"
+        if product_arg == "spectrum":
+            content_type = "text/plain"
+            ext = "txt"
+
+        response = HttpResponse(data, content_type=content_type)
+        response['Content-Disposition'] = f'attachment; filename={name}_{product_arg}.{ext}'
+        response['Content-Length'] = size
+        return response
 
 
 def _build_detection(detection):

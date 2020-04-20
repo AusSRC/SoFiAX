@@ -2,7 +2,9 @@ version: '3'
 
 services:
 
-  sofia_web_app:
+  sofiax_web_app:
+    image: sofiax_web_app
+    container_name: sofiax_web_app
     build:
       context: .
       dockerfile: Dockerfile.gun
@@ -11,10 +13,11 @@ services:
       - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
       - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
     networks:
-      - nginx_network
+      - sofiax_network
 
-  nginx:
+  sofiax_nginx:
     image: linuxserver/letsencrypt
+    container_name: sofiax_ngnix
     cap_add:
       - NET_ADMIN
     environment:
@@ -37,11 +40,23 @@ services:
       - static_volume:/opt/services/sofia_web_app/static  # <-- bind the static volume
       - media_volume:/opt/services/sofia_web_app/media  # <-- bind the media volume
     networks:
-      - nginx_network
+      - sofiax_network
 
+  sofiax_vo:
+    image: sofiax_vo
+    container_name: sofiax_vo
+    build:
+      context: .
+      dockerfile: Dockerfile.vo
+    env_file:
+      - ./config/vo/vo.env
+    ports:
+      - 8080:8080
+    networks:
+      - sofiax_network
 
 networks:
-  nginx_network:
+  sofiax_network:
     driver: bridge
 
 volumes:

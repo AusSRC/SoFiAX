@@ -1,17 +1,18 @@
 \connect sofiadb
 
 CREATE EXTENSION postgis;
+CREATE EXTENSION pg_sphere;
 
+CREATE SCHEMA "wallaby" AUTHORIZATION "admin";
 
-
-CREATE TABLE "Run" (
+CREATE TABLE wallaby.run (
   "id" BIGSERIAL PRIMARY KEY,
   "name" varchar NOT NULL,
   "sanity_thresholds" jsonb NOT NULL,
    unique ("name", "sanity_thresholds")
 );
 
-CREATE TABLE "Instance" (
+CREATE TABLE wallaby.instance (
   "id" BIGSERIAL PRIMARY KEY,
   "run_id" bigint NOT NULL,
   "filename" varchar NOT NULL,
@@ -28,11 +29,11 @@ CREATE TABLE "Instance" (
   unique ("run_id", "filename", "boundary")
 );
 
-CREATE TABLE "Detection" (
+CREATE TABLE wallaby.detection (
   "id" BIGSERIAL PRIMARY KEY,
   "instance_id" bigint NOT NULL,
   "run_id" bigint NOT NULL,
-  "name" varchar,
+  "name" varchar NOT NULL,
   "x" double precision NOT NULL,
   "y" double precision NOT NULL ,
   "z" double precision NOT NULL,
@@ -71,11 +72,12 @@ CREATE TABLE "Detection" (
   "freq" double precision,
   "flag" int,
   "unresolved" boolean DEFAULT False NOT NULL,
-  unique ("ra", "dec", "freq", "instance_id", "run_id")
+  unique ("name", "x", "y", "z", "x_min", "x_max", "y_min", "y_max", "z_min", "z_max", "n_pix", "f_min", "f_max",
+  "f_sum", "instance_id", "run_id")
 );
 
 
-CREATE TABLE "Products" (
+CREATE TABLE wallaby.products (
   "id" BIGSERIAL PRIMARY KEY,
   "detection_id" bigint NOT NULL,
   "cube" bytea,
@@ -88,12 +90,36 @@ CREATE TABLE "Products" (
   unique ("detection_id")
 );
 
-ALTER TABLE "Instance" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
-ALTER TABLE "Detection" ADD FOREIGN KEY ("instance_id") REFERENCES "Instance" ("id") ON DELETE CASCADE;
-ALTER TABLE "Detection" ADD FOREIGN KEY ("run_id") REFERENCES "Run" ("id") ON DELETE CASCADE;
-ALTER TABLE "Products" ADD FOREIGN KEY ("detection_id") REFERENCES "Detection" ("id") ON DELETE CASCADE;
+ALTER TABLE wallaby.instance ADD FOREIGN KEY ("run_id") REFERENCES wallaby.run ("id") ON DELETE CASCADE;
+ALTER TABLE wallaby.detection ADD FOREIGN KEY ("instance_id") REFERENCES wallaby.instance ("id") ON DELETE CASCADE;
+ALTER TABLE wallaby.detection ADD FOREIGN KEY ("run_id") REFERENCES wallaby.run ("id") ON DELETE CASCADE;
+ALTER TABLE wallaby.products ADD FOREIGN KEY ("detection_id") REFERENCES wallaby.detection ("id") ON DELETE CASCADE;
 
-ALTER TABLE "Run" OWNER TO "sofia_user";
-ALTER TABLE "Instance" OWNER TO "sofia_user";
-ALTER TABLE "Detection" OWNER TO "sofia_user";
-ALTER TABLE "Products" OWNER TO "sofia_user";
+ALTER TABLE wallaby.run OWNER TO "admin";
+ALTER TABLE wallaby.instance OWNER TO "admin";
+ALTER TABLE wallaby.detection OWNER TO "admin";
+ALTER TABLE wallaby.products OWNER TO "admin";
+
+GRANT ALL PRIVILEGES ON DATABASE sofiadb TO "admin";
+GRANT ALL PRIVILEGES ON DATABASE sofiadb TO "gavoadmin";
+GRANT ALL PRIVILEGES ON DATABASE sofiadb TO "gavo";
+
+GRANT CONNECT ON DATABASE sofiadb TO "wallaby_user";
+GRANT USAGE ON SCHEMA "wallaby" TO "wallaby_user";
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE wallaby.instance, wallaby.detection, wallaby.run, wallaby.products TO "wallaby_user";
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA wallaby TO "wallaby_user";
+
+GRANT CONNECT ON DATABASE sofiadb TO "gavoadmin";
+GRANT USAGE ON SCHEMA "wallaby" TO "gavoadmin";
+GRANT SELECT ON TABLE wallaby.instance, wallaby.detection, wallaby.run, wallaby.products TO "gavoadmin";
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wallaby TO "gavoadmin";
+
+GRANT CONNECT ON DATABASE sofiadb TO "gavo";
+GRANT USAGE ON SCHEMA "wallaby" TO "gavo";
+GRANT SELECT ON TABLE wallaby.instance, wallaby.detection, wallaby.run, wallaby.products TO "wallaby_user";
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wallaby TO "gavo";
+
+GRANT CONNECT ON DATABASE sofiadb TO "untrusted";
+GRANT USAGE ON SCHEMA "wallaby" TO "untrusted";
+GRANT SELECT ON TABLE wallaby.instance, wallaby.detection, wallaby.run, wallaby.products TO "untrusted";
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wallaby TO "untrusted";

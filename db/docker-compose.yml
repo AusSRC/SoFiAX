@@ -1,11 +1,20 @@
-version: '2'
+version: '3.5'
 
 services:
-  sofiax-db:
+  sofiax_db:
     build: .
-    image: sofiax/sofiax-db
-    container_name: sofiax-db
+    image: sofiax_db
+    container_name: sofiax_db
     ports:
       - 5432:5432
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
       - /db_data:/var/lib/postgresql/data
+    networks:
+      - sofiax_network
+
+networks:
+  sofiax_network:
+    name: sofiax_network
+    driver: bridge
