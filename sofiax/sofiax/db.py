@@ -57,6 +57,15 @@ class Run(object):
             raise ValueError('flux missing from sanity_thresholds')
 
         try:
+            uncertainty_sigma = sanity_thresholds['uncertainty_sigma']
+            if not isinstance(uncertainty_sigma, int):
+                raise ValueError('uncertainty_sigma in sanity_thresholds is not an int')
+            if uncertainty_sigma <= 0:
+                raise ValueError('uncertainty_sigma in sanity_thresholds is <= 0')
+        except KeyError:
+            raise ValueError('uncertainty_sigma missing from sanity_thresholds')
+
+        try:
             spatial = sanity_thresholds['spatial_extent']
             if not isinstance(spatial, tuple):
                 raise ValueError('spatial_extent in sanity_thresholds is not a tuple')
@@ -128,7 +137,7 @@ async def db_instance_upsert(conn, instance: Instance):
     return instance
 
 
-async def db_source_match(conn, run_id: int, detection: dict):
+async def db_source_match(conn, run_id: int, detection: dict, uncertainty_sigma: int):
     x = detection['x']
     y = detection['y']
     z = detection['z']
@@ -138,10 +147,10 @@ async def db_source_match(conn, run_id: int, detection: dict):
     result = await conn.fetch('SELECT d.id, d.instance_id, x, y, z, f_sum, ell_maj, ell_min, w50, w20, '
                               'flag, unresolved FROM wallaby.detection as d, wallaby.instance as i WHERE '
                               'ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
-                              '<= 3 * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '
+                              f'<= {uncertainty_sigma} * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '
                               'COALESCE(NULLIF((($1 - x)^2 + ($2 - y)^2), 0), 1)) AND '
                               'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
-                              '<= 3 * SQRT($6 ^ 2 + err_z ^ 2) AND '
+                              f'<= {uncertainty_sigma} * SQRT($6 ^ 2 + err_z ^ 2) AND '
                               'd.instance_id = i.id AND i.run_id = $7 ORDER BY d.id ASC FOR UPDATE OF d',
                               x, y, z, err_x, err_y, err_z, run_id)
     for i, j in enumerate(result):

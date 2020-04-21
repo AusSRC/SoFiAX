@@ -187,7 +187,7 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         spec_bytes = await _get_file_bytes(path)
 
         async with conn.transaction():
-            result = await db_source_match(conn, run.run_id, detect_dict)
+            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma'])
             result_len = len(result)
             if result_len == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
@@ -235,13 +235,14 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
 
 
 async def run_merge(config, run_name, param_list, sanity):
-    host = config['Database']['hostname']
-    name = config['Database']['name']
-    username = config['Database']['username']
-    password = config['Database']['password']
+    conf = config['SoFiAX']
+    host = conf['db_hostname']
+    name = conf['db_name']
+    username = conf['db_username']
+    password = conf['db_password']
 
-    execute = int(config['Sofia']['execute'])
-    path = config['Sofia']['path']
+    execute = int(conf['sofia_execute'])
+    path = conf['sofia_path']
 
     while len(param_list) > 0:
         param_path = param_list.pop(0)

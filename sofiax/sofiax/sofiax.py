@@ -22,14 +22,7 @@ async def main():
     root.addHandler(handler)
 
     parser = argparse.ArgumentParser(description='Sofia standalone execution.')
-    parser.add_argument('--name', dest='name', type=str, required=True,
-                        help='unique run name')
-    parser.add_argument('--spatial_extent', dest='spatial', nargs='+', type=int, required=True,
-                        help='sanity threshold for spatial extents (min%% max%%)')
-    parser.add_argument('--spectral_extent', dest='spectral', nargs='+', type=int, required=True,
-                        help='sanity threshold for spectral extents (min%% max%%)')
-    parser.add_argument('--flux', dest='flux', type=int, required=True,
-                        help='sanity threshold for flux (%%)')
+
     parser.add_argument('-c', '--conf', dest='conf', required=True,
                         help='configuration file')
     parser.add_argument('-p', '--param', dest='param', nargs='+', required=True,
@@ -39,15 +32,39 @@ async def main():
 
     config = configparser.ConfigParser()
     config.read(args.conf)
-    processes = config['Sofia']['processes']
+    conf = config['SoFiAX']
+    processes = conf.get('sofia_processes', 0)
+    run_name = conf.get('run_name', None)
+    if run_name is None:
+        raise ValueError('run_name is not defined in configuration.')
 
-    sanity = {'flux': args.flux,
-              'spatial_extent': tuple(args.spatial),
-              'spectral_extent': tuple(args.spectral)}
+    spatial = conf.get('spatial_extent', None)
+    if spatial is None:
+        raise ValueError('spatial_extent is not defined in configuration.')
+    spatial = spatial.replace(' ', '').split(',')
+
+    spectral = conf.get('spectral_extent', None)
+    if spectral is None:
+        raise ValueError('spectral_extent is not defined in configuration.')
+    spectral = spectral.replace(' ', '').split(',')
+
+    flux = conf.get('flux', None)
+    if flux is None:
+        raise ValueError('flux is not defined in configuration.')
+    flux = int(flux)
+
+    uncertainty_sigma = conf.get('uncertainty_sigma', 5)
+    if uncertainty_sigma is None:
+        raise ValueError('uncertainty_sigma is empty.')
+
+    sanity = {'flux': flux,
+              'spatial_extent': tuple(map(int, spatial)),
+              'spectral_extent': tuple(map(int, spectral)),
+              'uncertainty_sigma': int(uncertainty_sigma)}
 
     Run.check_inputs(sanity)
 
-    task_list = [asyncio.create_task(run_merge(config, args.name, args.param, sanity))
+    task_list = [asyncio.create_task(run_merge(config, run_name, args.param, sanity))
                  for _ in range(int(processes))]
 
     try:

@@ -122,6 +122,9 @@ class Detection(models.Model):
         if self.x == detect.x and self.y == detect.y and self.z == detect.z:
             return True
 
+        sanity = self.run.sanity_thresholds
+        sigma = sanity.get('uncertainty_sigma', 5)
+
         d_space = math.sqrt((self.x - detect.x) ** 2 + (self.y - detect.y) ** 2)
         d_space_err = math.sqrt((self.x - detect.x) ** 2 * (self.err_x ** 2 + detect.err_x ** 2) +
                                 (self.y - detect.y) ** 2 * (self.err_y ** 2 + detect.err_y ** 2)) / \
@@ -129,7 +132,7 @@ class Detection(models.Model):
         d_spec = abs(self.z - detect.z)
         d_spec_err = math.sqrt(self.err_z ** 2 + detect.err_z ** 2)
 
-        return d_space <= 3 * d_space_err and d_spec <= 3 * d_spec_err
+        return d_space <= sigma * d_space_err and d_spec <= sigma * d_spec_err
 
     def spectrum_image(self):
         product = self.products_set.only('spectrum')
