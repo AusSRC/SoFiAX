@@ -232,7 +232,7 @@ def _build_catalog(detections, date, version):
         f'<FIELD datatype="long" name="n_pix" unit="" ucd="meta.number;instr.pixel"/>\n' \
         f'<FIELD datatype="double" name="f_min" unit="Jy/beam" ucd="phot.flux.density;stat.min"/>\n' \
         f'<FIELD datatype="double" name="f_max" unit="Jy/beam" ucd="phot.flux.density;stat.max"/>\n' \
-        f'<FIELD datatype="double" name="f_sum" unit="Jy/beam*Hz" ucd="phot.flux"/>\n' \
+        f'<FIELD datatype="double" name="f_sum" unit="Jy/beam" ucd="phot.flux"/>\n' \
         f'<FIELD datatype="double" name="rel" unit="" ucd="stat.probability"/>\n' \
         f'<FIELD datatype="long" name="flag" unit="" ucd="meta.code.qual"/>\n' \
         f'<FIELD datatype="double" name="rms" unit="Jy/beam" ucd="instr.det.noise"/>\n' \

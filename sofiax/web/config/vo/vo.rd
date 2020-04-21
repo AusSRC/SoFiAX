@@ -55,7 +55,7 @@
       <column type="double precision" name="err_x" unit="pix" ucd="stat.error;pos.cartesian.x"/>
       <column type="double precision" name="err_y" unit="pix" ucd="stat.error;pos.cartesian.y"/>
       <column type="double precision" name="err_z" unit="pix" ucd="stat.error;pos.cartesian.z"/>
-      <column type="double precision" name="err_f_sum" unit="Jy/beam*Hz" ucd="stat.error;phot.flux"/>
+      <column type="double precision" name="err_f_sum" unit="Jy/beam" ucd="stat.error;phot.flux"/>
       <column type="double precision" name="ra" unit="deg" ucd="pos.eq.ra;meta.main" verbLevel="1"/>
       <column type="double precision" name="dec" unit="deg" ucd="pos.eq.dec;meta.main" verbLevel="1"/>
       <column type="double precision" name="freq" unit="Hz" ucd="em.freq"/>
