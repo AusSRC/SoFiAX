@@ -248,7 +248,7 @@ def _build_catalog(detections, date, version):
         f'<FIELD datatype="double" name="err_x" unit="pix" ucd="stat.error;pos.cartesian.x"/>\n' \
         f'<FIELD datatype="double" name="err_y" unit="pix" ucd="stat.error;pos.cartesian.y"/>\n' \
         f'<FIELD datatype="double" name="err_z" unit="pix" ucd="stat.error;pos.cartesian.z"/>\n' \
-        f'<FIELD datatype="double" name="err_f_sum" unit="Jy/beam*Hz" ucd="stat.error;phot.flux"/>\n' \
+        f'<FIELD datatype="double" name="err_f_sum" unit="Jy/beam" ucd="stat.error;phot.flux"/>\n' \
         f'<FIELD datatype="double" name="ra" unit="deg" ucd="pos.eq.ra"/>\n' \
         f'<FIELD datatype="double" name="dec" unit="deg" ucd="pos.eq.dec"/>\n' \
         f'<FIELD datatype="double" name="freq" unit="Hz" ucd="em.freq"/>\n' \

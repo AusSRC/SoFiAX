@@ -39,7 +39,7 @@
       <column type="double precision" name="n_pix" unit="" ucd="meta.number;instr.pixel"/>
       <column type="double precision" name="f_min" unit="Jy/beam" ucd="phot.flux.density;stat.min"/>
       <column type="double precision" name="f_max" unit="Jy/beam" ucd="phot.flux.density;stat.max"/>
-      <column type="double precision" name="f_sum" unit="Jy/beam*Hz" ucd="phot.flux"/>
+      <column type="double precision" name="f_sum" unit="Jy/beam" ucd="phot.flux"/>
       <column type="double precision" name="rel" unit="" ucd="stat.probability"/>
       <column type="integer" name="flag" unit="" ucd="meta.code.qual" required="True"/>
       <column type="double precision" name="rms" unit="Jy/beam" ucd="instr.det.noise"/>
