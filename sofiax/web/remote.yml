@@ -4,7 +4,6 @@ services:
 
   sofiax_web_app:
     image: sofiax_web_app
-    container_name: sofiax_web_app
     build:
       context: .
       dockerfile: Dockerfile.gun
