@@ -7,11 +7,12 @@ RUN svn co http://svn.ari.uni-heidelberg.de/svn/gavo/python/tags/release-2.0.3/ 
 WORKDIR ./dachs/
 RUN python3 setup.py install
 RUN pip3 install cryptography astropy psycopg2-binary twisted lxml Pillow pymoc pyparsing==2.2 rjsmin testresources
-RUN pip3 install matplotlib
+RUN pip3 install matplotlib docutils
 RUN adduser --system gavo && addgroup --system gavo && adduser gavo gavo && adduser `id -nu` gavo
 RUN mkdir -p /var/gavo/
 RUN gavo init --nodb
 COPY ./config/vo/gavo.rc /etc/gavo.rc
+COPY ./config/vo/defaultmeta.txt /var/gavo/etc/defaultmeta.txt
 COPY ./config/vo/dsn /var/gavo/etc/dsn
 COPY ./config/vo/feed /var/gavo/etc/feed
 COPY ./config/vo/trustedquery /var/gavo/etc/trustedquery

@@ -34,6 +34,8 @@ CREATE TABLE wallaby.detection (
   "instance_id" bigint NOT NULL,
   "run_id" bigint NOT NULL,
   "name" varchar NOT NULL,
+  "access_url" varchar NOT NULL,
+  "access_format" varchar DEFAULT 'application/x-votable+xml;content=datalink' NOT NULL,
   "x" double precision NOT NULL,
   "y" double precision NOT NULL ,
   "z" double precision NOT NULL,
@@ -116,7 +118,7 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wallaby TO "gavoadmin";
 
 GRANT CONNECT ON DATABASE sofiadb TO "gavo";
 GRANT USAGE ON SCHEMA "wallaby" TO "gavo";
-GRANT SELECT ON TABLE wallaby.instance, wallaby.detection, wallaby.run, wallaby.products TO "wallaby_user";
+GRANT SELECT ON TABLE wallaby.instance, wallaby.detection, wallaby.run, wallaby.products TO "gavo";
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA wallaby TO "gavo";
 
 GRANT CONNECT ON DATABASE sofiadb TO "untrusted";

@@ -1,5 +1,9 @@
 <resource schema="wallaby">
    <meta name="title">WALLABY - the ASKAP HI All-Sky Survey</meta>
+    <meta name="creationDate">2007-06-06T12:00:00Z</meta>
+    <meta name="description">WALLABY - the ASKAP HI All-Sky Survey</meta>
+    <meta name="copyright" format="plain">WALLABY - the ASKAP HI All-Sky Survey</meta>
+    <meta name="creationDate">2020-04-24T12:00:00Z</meta>
 
    <table id="run" onDisk="True" adql="True">
       <column name="id" type="bigint" unit="" ucd="meta.id;meta.main" required="True"/>
@@ -27,6 +31,8 @@
       <column name="name" type="text" unit="" ucd="meta.id"/>
       <column name="run_id" type="bigint" unit="" ucd="meta.id" required="True"/>
       <column name="instance_id" type="bigint" unit="" ucd="meta.id" required="True"/>
+      <column name="access_url" type="text"  ucd="meta.ref.url;meta.data.datalink" tablehead="Datalink" verbLevel="15" displayHint="type=url"/>
+       <column name="access_format" type="text"  ucd="meta.code.mime"/>
       <column type="double precision" name="x" unit="pix" ucd="pos.cartesian.x"/>
       <column type="double precision" name="y" unit="pix" ucd="pos.cartesian.y"/>
       <column type="double precision" name="z" unit="pix" ucd="pos.cartesian.z"/>
@@ -155,9 +161,6 @@
       <make table="run"/>
       <make table="instance"/>
       <make table="detection">
-         <rowmaker>
-            <map key="datalink_url">\dlMetaURI{dl}</map>
-         </rowmaker>
       </make>
    </data>
 </resource>

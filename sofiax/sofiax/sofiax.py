@@ -6,9 +6,8 @@ import configparser
 import argparse
 import sys
 
-
 from merge import run_merge
-from db import Run
+from db import Run, Const
 
 
 async def main():
@@ -56,6 +55,10 @@ async def main():
     uncertainty_sigma = conf.get('uncertainty_sigma', 5)
     if uncertainty_sigma is None:
         raise ValueError('uncertainty_sigma is empty.')
+
+    vo_datalink_url = conf.get('vo_datalink_url', None)
+    if vo_datalink_url is not None:
+        Const.VO_DATALINK_URL = vo_datalink_url
 
     sanity = {'flux': flux,
               'spatial_extent': tuple(map(int, spatial)),

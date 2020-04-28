@@ -1,0 +1,22 @@
+publisher: AusSRC
+publisherID: ivo://aussrc-vo/org
+contact.name: Dave Pallot
+contact.address: 7 Fairway, 2nd Floor Crawley, Perth, WA, 6009.
+contact.email: dave.pallot@icrar.org
+contact.telephone:
+creator.name: Dave Pallot
+creator.logo:
+
+_noresultwarning: Your query did not match any data.
+
+authority.creationDate: 2020-04-24
+authority.title: Wallaby Catalog
+authority.shortName: Wallaby
+authority.description: WALLABY - the ASKAP HI All-Sky Survey
+authority.referenceURL: https://www.atnf.csiro.au/research/WALLABY/
+authority.managingOrg: ivo://x-unregistred/org
+organization.title: AusSRC
+organization.description:
+organization.referenceURL: https://aussrc.org/
+
+site.description: WALLABY - the ASKAP HI All-Sky Survey

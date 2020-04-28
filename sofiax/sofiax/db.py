@@ -1,43 +1,47 @@
 import json
 
-FULL_SCHEMA = {
-    "name" : None,
-    "x": None,
-    "y": None,
-    "z": None,
-    "x_min": None,
-    "x_max": None,
-    "y_min": None,
-    "z_min": None,
-    "z_max": None,
-    "n_pix": None,
-    "f_min": None,
-    "f_max": None,
-    "f_sum": None,
-    "rel": None,
-    "rms": None,
-    "w20": None,
-    "w50": None,
-    "ell_maj": None,
-    "ell_min": None,
-    "ell_pa": None,
-    "ell3s_maj": None,
-    "ell3s_pa": None,
-    "kin_pa": None,
-    "ra": None,
-    "dec": None,
-    "l": None,
-    "b": None,
-    "v_rad": None,
-    "v_opt": None,
-    "v_app": None,
-    "err_x": None,
-    "err_y": None,
-    "err_z": None,
-    "err_f_sum": None,
-    "freq": None,
-    "flag": None
-}
+
+class Const(object):
+    FULL_SCHEMA = {
+        "name" : None,
+        "x": None,
+        "y": None,
+        "z": None,
+        "x_min": None,
+        "x_max": None,
+        "y_min": None,
+        "z_min": None,
+        "z_max": None,
+        "n_pix": None,
+        "f_min": None,
+        "f_max": None,
+        "f_sum": None,
+        "rel": None,
+        "rms": None,
+        "w20": None,
+        "w50": None,
+        "ell_maj": None,
+        "ell_min": None,
+        "ell_pa": None,
+        "ell3s_maj": None,
+        "ell3s_pa": None,
+        "kin_pa": None,
+        "ra": None,
+        "dec": None,
+        "l": None,
+        "b": None,
+        "v_rad": None,
+        "v_opt": None,
+        "v_app": None,
+        "err_x": None,
+        "err_y": None,
+        "err_z": None,
+        "err_f_sum": None,
+        "freq": None,
+        "flag": None
+    }
+
+    VO_DATALINK_URL = 'https://wallaby.aussrc.org/wallaby/vo/dl/dlmeta?ID='
 
 
 class Run(object):
@@ -180,18 +184,20 @@ async def db_detection_insert(conn, run_id: int, instance_id: int, detection: di
     detection['instance_id'] = instance_id
     detection['unresolved'] = unresolved
 
-    for _, key in enumerate(FULL_SCHEMA):
+    for _, key in enumerate(Const.FULL_SCHEMA):
         if detection.get(key, None) is None:
-            detection[key] = FULL_SCHEMA[key]
+            detection[key] = Const.FULL_SCHEMA[key]
 
     detection_id = await conn.fetchrow('INSERT INTO wallaby.detection '
                                        '(run_id, instance_id, unresolved, name, x, y, z, x_min, x_max, '
                                        'y_min, y_max, z_min, z_max, n_pix, f_min, f_max, f_sum, rel, flag, rms, '
                                        'w20, w50, ell_maj, ell_min, ell_pa, ell3s_maj, ell3s_min, ell3s_pa, kin_pa, '
-                                       'err_x, err_y, err_z, err_f_sum, ra, dec, freq, l, b, v_rad, v_opt, v_app) '
+                                       'err_x, err_y, err_z, err_f_sum, ra, dec, freq, l, b, v_rad, v_opt, v_app, '
+                                       'access_url) '
                                        'VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, '
                                        '$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, '
-                                       '$28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41) '
+                                       '$28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, '
+                                       '$42 || currval(pg_get_serial_sequence(\'wallaby.detection\', \'id\'))) '
                                        'ON CONFLICT (name, x, y, z, x_min, x_max, y_min, y_max, z_min, z_max, '
                                        'n_pix, f_min, f_max, f_sum, instance_id, run_id) '
                                        'DO UPDATE SET ra=EXCLUDED.ra RETURNING id',
@@ -206,7 +212,8 @@ async def db_detection_insert(conn, run_id: int, instance_id: int, detection: di
                                        detection['ell3s_pa'], detection['kin_pa'], detection['err_x'],
                                        detection['err_y'], detection['err_z'], detection['err_f_sum'],
                                        detection['ra'], detection['dec'], detection['freq'], detection['l'],
-                                       detection['b'], detection['v_rad'], detection['v_opt'], detection['v_app'])
+                                       detection['b'], detection['v_rad'], detection['v_opt'], detection['v_app'],
+                                       Const.VO_DATALINK_URL)
 
     await db_detection_product_insert(conn, detection_id[0], cube, mask, mom0, mom1, mom2, chan, spec)
     return detection_id[0]
