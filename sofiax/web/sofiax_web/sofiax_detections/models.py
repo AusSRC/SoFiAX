@@ -74,7 +74,7 @@ class Detection(models.Model):
         f1 = self.f_sum
         f2 = detect.f_sum
         flux_threshold = sanity_thresholds['flux']
-        diff = abs(f1 - f2) * 100 / ((abs(f2) + abs(f2)) / 2)
+        diff = abs(f1 - f2) * 100 / ((abs(f1) + abs(f2)) / 2)
         # gone beyond the % tolerance
         if diff > flux_threshold:
             return False, f"Detections: {self.id}, {detect.id} Var: flux {round(diff, 2)}% > {flux_threshold}%"

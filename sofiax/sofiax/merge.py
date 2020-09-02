@@ -69,7 +69,7 @@ async def remove_output(params: dict, cwd: str):
 
 def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
     f1, f2 = flux
-    diff = abs(f1 - f2) * 100 / ((abs(f2) + abs(f2)) / 2)
+    diff = abs(f1 - f2) * 100 / ((abs(f1) + abs(f2)) / 2)
     # gone beyond the % tolerance
     if diff > sanity_thresholds['flux']:
         # require manual separation, add ref to UnresolvedDetection
