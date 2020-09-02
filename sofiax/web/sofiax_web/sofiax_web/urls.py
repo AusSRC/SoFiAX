@@ -26,3 +26,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url=reverse_lazy('admin:index'))),
     path('admin/', admin.site.urls),
 ]
+
+admin.site.enable_nav_sidebar = False
