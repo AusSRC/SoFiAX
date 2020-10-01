@@ -208,7 +208,7 @@ class Instance(models.Model):
     flag_log = models.BinaryField(blank=True, null=True)
     reliability_plot = models.BinaryField(blank=True, null=True)
     log = models.BinaryField(blank=True, null=True)
-    parameters = models.TextField()  # This field type is a guess.
+    parameters = models.JSONField()  # This field type is a guess.
     return_code = models.IntegerField(null=True)
     version = models.CharField(max_length=512, blank=True, null=True)
     stdout = models.BinaryField(blank=True, null=True)
@@ -246,7 +246,7 @@ class Products(models.Model):
 class Run(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.TextField()
-    sanity_thresholds = models.TextField()  # This field type is a guess.
+    sanity_thresholds = models.JSONField()  # This field type is a guess.
 
     def __str__(self):
         return f"{self.name}"
