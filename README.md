@@ -9,6 +9,9 @@ This project extends the capability of the [SoFiA-2](https://github.com/SoFiA-Ad
    * TAP/ADQL + Datalink service: https://wallaby.aussrc.org/tap
    * Admin Console: https://wallaby.aussrc.org
 
+## Service Source Code
+Source code for SoFiAX database, TAP service and Admin Console can be found in the [SoFiAX_services repository](https://github.com/AusSRC/SoFiAX_services "SoFiAX_services")
+
 ## Installation
 
 ### Requirements:
