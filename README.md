@@ -26,7 +26,7 @@ This project extends the capability of the [SoFiA-2](https://github.com/SoFiA-Ad
   cd SoFiAX
   python3 -m venv env
   source env/bin/activate
-  pip install -r requirements.txt
+  python setup.py install
   ```
 
 ### Running a SofiAX instance:
@@ -73,10 +73,10 @@ Create a SoFiA-2 param file with a minimum:
 * output.directory
 * output.filename
 
-### Run SofiAX (sofiax.py):
+### Run SofiAX (sofiax):
 
  ```
-usage: standalone.py [-h] -c CONF -p PARAM [PARAM ...]
+usage: sofiax.py [-h] -c CONF -p PARAM [PARAM ...]
 
 Sofia standalone execution.
 
@@ -91,7 +91,7 @@ optional arguments:
 
 Run SoFiA with test.par  
 ```
-python sofiax.py -c config.ini -p test.par
+sofiax -c config.ini -p test.par
 ```
 
 ### Slurm example:
@@ -113,7 +113,7 @@ sofia.sh
 module load openssl/default
 module load python/3.7.4
 
-source /<env path>/env/bin/activate && python /<sofiax path>/SoFiAX/sofiax/sofiax/sofiax.py -c $1 -p $2
+source /<env path>/env/bin/activate && sofiax -c $1 -p $2
 ```
 
 run.sh

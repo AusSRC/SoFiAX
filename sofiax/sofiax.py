@@ -1,16 +1,14 @@
-#!python
-
 import asyncio
 import logging
 import configparser
 import argparse
 import sys
 
-from merge import run_merge
-from db import Run, Const
+from .merge import run_merge
+from .db import Run, Const
 
 
-async def main():
+async def _main():
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
@@ -76,6 +74,7 @@ async def main():
         logging.exception(e)
         sys.exit(1)
 
-if __name__ == "__main__":
+
+def main():
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    loop.run_until_complete(_main())
