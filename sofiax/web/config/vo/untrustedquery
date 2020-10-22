@@ -1,3 +1,0 @@
-include dsn
-user = untrusted
-password = untrusted

@@ -1,5 +1,0 @@
-astropy
-matplotlib
-opencv-python
-psycopg2-binary
-Pillow

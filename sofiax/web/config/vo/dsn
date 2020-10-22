@@ -1,5 +1,0 @@
-database = sofiadb
-host = sofiax_db
-port = 5432
-user = admin
-password = admin
