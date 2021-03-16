@@ -5,7 +5,7 @@ import argparse
 import sys
 
 from .merge import run_merge
-from .database import Run, Const
+from .database import Run, Detection
 from .utils import _get_from_conf
 
 
@@ -43,7 +43,7 @@ async def _main():
     uncertainty_sigma = _get_from_conf(conf, 'uncertainty_sigma', 5)
     vo_datalink_url = conf.get('vo_datalink_url', None)
     if vo_datalink_url is not None:
-        Const.VO_DATALINK_URL = vo_datalink_url
+        Detection.VO_DATALINK_URL = vo_datalink_url
 
     # wot is going on here
     sanity = {
@@ -67,7 +67,7 @@ async def _main():
         sys.exit(1)
 
 
-def main():
+if __name__ == "__main__":
     """
 
     """

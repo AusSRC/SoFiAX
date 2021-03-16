@@ -1,7 +1,10 @@
 import json
 
 
-class Const(object):
+class Detection(object):
+    """Schema for a SoFiA detection object.
+
+    """
     FULL_SCHEMA = {
         "name": None,
         "x": None,
@@ -151,6 +154,7 @@ async def db_source_match(conn, run_id: int, detection: dict, uncertainty_sigma:
     err_x = detection['err_x']
     err_y = detection['err_y']
     err_z = detection['err_z']
+
     result = await conn.fetch('SELECT d.id, d.instance_id, x, y, z, f_sum, ell_maj, ell_min, w50, w20, '
                               'flag, unresolved FROM wallaby.detection as d, wallaby.instance as i WHERE '
                               'ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
@@ -160,6 +164,7 @@ async def db_source_match(conn, run_id: int, detection: dict, uncertainty_sigma:
                               f'<= {uncertainty_sigma} * SQRT($6 ^ 2 + err_z ^ 2) AND '
                               'd.instance_id = i.id AND i.run_id = $7 ORDER BY d.id ASC FOR UPDATE OF d',
                               x, y, z, err_x, err_y, err_z, run_id)
+
     for i, j in enumerate(result):
         # do not want the original detection if it already exists
         if j['x'] == x and j['y'] == y and j['z'] == z:
@@ -187,9 +192,9 @@ async def db_detection_insert(conn, run_id: int, instance_id: int, detection: di
     detection['instance_id'] = instance_id
     detection['unresolved'] = unresolved
 
-    for _, key in enumerate(Const.FULL_SCHEMA):
+    for _, key in enumerate(Detection.FULL_SCHEMA):
         if detection.get(key, None) is None:
-            detection[key] = Const.FULL_SCHEMA[key]
+            detection[key] = Detection.FULL_SCHEMA[key]
 
     detection_id = await conn.fetchrow('INSERT INTO wallaby.detection '
                                        '(run_id, instance_id, unresolved, name, x, y, z, x_min, x_max, '
@@ -216,7 +221,7 @@ async def db_detection_insert(conn, run_id: int, instance_id: int, detection: di
                                        detection['err_y'], detection['err_z'], detection['err_f_sum'],
                                        detection['ra'], detection['dec'], detection['freq'], detection['l'],
                                        detection['b'], detection['v_rad'], detection['v_opt'], detection['v_app'],
-                                       Const.VO_DATALINK_URL)
+                                       Detection.VO_DATALINK_URL)
 
     await db_detection_product_insert(conn, detection_id[0], cube, mask, mom0, mom1, mom2, chan, spec)
     return detection_id[0]

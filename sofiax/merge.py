@@ -10,64 +10,63 @@ from .database import Run, Instance, \
     db_run_upsert, db_instance_upsert, \
     db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved
-from .utils import _get_parameter, _get_output_filename, _flux_difference, \
-    _get_file_bytes, _parse_sofia_param_file
+from .utils import _get_parameter, _get_output_filename, \
+    _percentage_difference, _get_file_bytes, _parse_sofia_param_file
 
 
 def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):  # noqa
-    """A function to check the spectral and spatial extent of the detection against
-    minimum and maximum values. If they fall outside this range they the sanity check returns
-    False. Otherwise, True.
+    """Compare flux values, spatial and spectral extent between two detections
+    that have been classified as a match. If values are unreasonable, return
+    False. Otherwise, return True.
 
     Args:
-        flux
-        spatial_extent
-        spectral_extent
-        sanity_thresholds
+        flux (tuple)                - Flux values to compare
+        spatial_extent (tuple)      - Spatial extent of detections to compare
+        spectral_extent (tuple)     - Spectral extent of detections to compare
+        sanity_thresholds (dict)    - Sanity threshold dictated by the Run?
 
     Returns (bool):
         True  - Detection passes sanity check.
-        False - Require manual separation, add
+        False - Requires manual separation, add
                 ref to UnresolvedDetection
     """
+    # Compare flux values
     f1, f2 = flux
-    diff = _flux_difference(f1, f2)
-
-    # gone beyond the % tolerance
-    if diff > sanity_thresholds['flux']:
+    flux_difference = _percentage_difference(f1, f2)
+    if flux_difference > sanity_thresholds['flux']:
         return False
 
-    # TODO(austin): Refactor the code below into a util function.
+    # Compare spatial extent
     min_extent, max_extent = sanity_thresholds['spatial_extent']
     max1, max2, min1, min2 = spatial_extent
-    max_diff = _flux_difference(max1, max2)
-    min_diff = _flux_difference(min1, min2)
+    max_diff = _percentage_difference(max1, max2)
+    min_diff = _percentage_difference(min1, min2)
 
-    if max_diff > max_extent:
+    if (max_diff > max_extent) or (min_diff > min_extent):
         return False
 
-    # TODO(austin): Ask why is the sign like this? Shouldn't it be
-    # min_diff < min_extent?
-    if min_diff > min_extent:
-        return False
-
+    # Compare spectral extent
     min_extent, max_extent = sanity_thresholds['spectral_extent']
     max1, max2, min1, min2 = spectral_extent
-    max_diff = _flux_difference(max1, max2)
-    min_diff = _flux_difference(min1, min2)
+    max_diff = _percentage_difference(max1, max2)
+    min_diff = _percentage_difference(min1, min2)
 
-    if max_diff > max_extent:
-        return False
-
-    if min_diff > min_extent:
+    if (max_diff > max_extent) or (min_diff > min_extent):
         return False
 
     return True
 
 
 async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
-    """Merge detections that matched.
+    """Merging solution for detections that have been identified as matches.
+    Updates content in the database automatically based on the heuristics
+    implemented in the body of the function (no return).
 
+    Args:
+        conn
+        run
+        instance
+        cwd
     """
     output_dir = _get_parameter('output.directory', instance.params, cwd)
     output_filename = _get_output_filename(instance.params, cwd)
@@ -116,9 +115,9 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
             except ValueError:
                 detect_dict[detect_names[i]] = item
 
-        flag = detect_dict['flag']
         # only check 0 or 4 flagged detections, throw the others away
         # automatic flags set on the data (in the catalogue)
+        flag = detect_dict['flag']
         if flag not in [0, 4]:
             continue
 
@@ -132,36 +131,30 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         detect_dict['z'] = detect_dict['z'] + instance.boundary[4]
 
         # Individual products for each detection
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_cube.fits"
-        cube_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mask.fits"
-        mask_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mom0.fits"
-        mom0_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mom1.fits"
-        mom1_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mom2.fits"
-        mom2_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_chan.fits"
-        chan_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_spec.txt"
-        spec_bytes = await _get_file_bytes(path)
+        base_filename = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}"
+        cube_bytes = await _get_file_bytes(f"{base_filename}_cube.fits")
+        mask_bytes = await _get_file_bytes(f"{base_filename}_mask.fits")
+        mom0_bytes = await _get_file_bytes(f"{base_filename}_mom0.fits")
+        mom1_bytes = await _get_file_bytes(f"{base_filename}_mom1.fits")
+        mom2_bytes = await _get_file_bytes(f"{base_filename}_mom2.fits")
+        chan_bytes = await _get_file_bytes(f"{base_filename}_chan.fits")
+        spec_bytes = await _get_file_bytes(f"{base_filename}_spec.txt")
 
         # TODO(austin): read about transactions
         async with conn.transaction():
-            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma'])
             # result is a list of conflicting sources.
-            result_len = len(result)
+            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma'])
 
             # No detections, enter detection into database
-            if result_len == 0:
+            if len(result) == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
                 await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                           mom2_bytes, chan_bytes, spec_bytes)
+
             # Handle duplicate detections
             else:
-                logging.info(f"Duplicates, Name: {detect_dict['name']} Details: {result_len} hit(s)")
+                logging.info(f"Duplicates, Name: {detect_dict['name']} Details: {len(result)} hit(s)")
                 resolved = False
                 for db_detect in result:
                     flux = (detect_dict['f_sum'], db_detect['f_sum'])
@@ -185,6 +178,7 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                                                       db_detect['unresolved'])
 
                         # Random selection of detection
+                        # TODO(austin): Update this according to Tobias' request
                         elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:
                             if bool(random.getrandbits(1)) is True:
                                 logging.info(f"Replacing, Name: {detect_dict['name']} Details: flag 0 with "

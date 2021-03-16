@@ -18,6 +18,6 @@ setup(
     ],
     python_requires='>3.6',
     entry_points={
-        'console_scripts': ['sofiax=sofiax.run:main'],
+        'console_scripts': ['sofiax=sofiax.main'],
     }
 )

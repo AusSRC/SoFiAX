@@ -16,7 +16,7 @@ async def _parse_sofia_param_file(sofia_param_path: str):
     content_bytes = await _get_file_bytes(sofia_param_path, mode='r')
     file_contents = f"[dummy_section]\n{content_bytes}"
 
-    # construct params from file contents
+    # Detectionruct params from file contents
     params = {}
     config = configparser.RawConfigParser()
     config.read_string(file_contents)
@@ -75,9 +75,9 @@ def _get_output_filename(params: dict, cwd: str):
     return output_filename
 
 
-def _flux_difference(f1, f2):
-    """Function to calculate the absolute difference between flux values
-    as a percentage.
+def _percentage_difference(v1, v2):
+    """Function to calculate the percentage difference between two values.
+    Used for comparing spatial and spectral extents.
 
     """
-    return abs(f1 - f2) * 100 / ((abs(f1) + abs(f2)) / 2)
+    return abs(v1 - v2) * 100 / ((abs(v1) + abs(v2)) / 2)
