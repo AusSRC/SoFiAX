@@ -3,7 +3,7 @@ import json
 
 class Const(object):
     FULL_SCHEMA = {
-        "name" : None,
+        "name": None,
         "x": None,
         "y": None,
         "z": None,
@@ -142,6 +142,9 @@ async def db_instance_upsert(conn, instance: Instance):
 
 
 async def db_source_match(conn, run_id: int, detection: dict, uncertainty_sigma: int):
+    """Check if a detection matches another detection in the database.
+
+    """
     x = detection['x']
     y = detection['y']
     z = detection['z']
@@ -227,4 +230,3 @@ async def db_update_detection_unresolved(conn, unresolved: bool, detection_id_li
     await conn.fetchrow('UPDATE wallaby.detection SET unresolved=$1 '
                         'WHERE id = ANY($2::bigint[])',
                         unresolved, detection_id_list)
-
