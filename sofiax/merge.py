@@ -1,20 +1,18 @@
-import os
 import random
-import asyncio
 import xmltodict
 import logging
-import asyncpg
 from datetime import datetime
 
-from .database import Run, Instance, \
-    db_run_upsert, db_instance_upsert, \
+from schema import Run, Instance
+from utils.sql import db_instance_upsert, \
     db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved
-from .utils import _get_parameter, _get_output_filename, \
-    _percentage_difference, _get_file_bytes, _parse_sofia_param_file
+from utils.io import _get_parameter, _get_output_filename, \
+    _get_file_bytes
+from utils.calcs import _percentage_difference
 
 
-def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):  # noqa
+def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
     """Compare flux values, spatial and spectral extent between two detections
     that have been classified as a match. If values are unreasonable, return
     False. Otherwise, return True.
@@ -57,32 +55,32 @@ def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, san
     return True
 
 
-async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
-    """Merging solution for detections that have been identified as matches.
-    Updates content in the database automatically based on the heuristics
-    implemented in the body of the function (no return).
+async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
+    """Strategy for handling new detections. If a match is identified with
+    existing database entries, updates are automatically applied based on
+    the heuristics implemented in the body of this function (no return).
+    If there is no match the detection is merged by default.
 
     Args:
-        conn
-        run
-        instance
-        cwd
+        conn:       Database connection object
+        run         Run object...
+        instance    Instance object...
+        cwd         Current working directory.
     """
+    # Retrieve output catalogue of SoFiA run
     output_dir = _get_parameter('output.directory', instance.params, cwd)
     output_filename = _get_output_filename(instance.params, cwd)
-
-    # Retrieve output catalogue of SoFiA run
     vo_table = f"{output_dir}/{output_filename}_cat.xml"
     content = await _get_file_bytes(vo_table, mode='r')
     cat = xmltodict.parse(content)
 
     # Getting instance metadata from outputs
     run_date = None
+    # NOTE(austin): why enumerate? Could just go "for j in cat[...]"?
     for _, j in enumerate(cat['VOTABLE']['RESOURCE']['PARAM']):
         if j['@name'] == 'Time':
             run_date = j['@value']
             break
-
     if run_date is None:
         raise AttributeError('Run date not found in votable')
 
@@ -100,7 +98,7 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
     for _, j in enumerate(fields):
         detect_names.append(j['@name'])
 
-    # TODO(austin): What is this "tr" thing?
+    # Iterate through content of the output catalogue
     # header of the table
     tr = cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']
     if not isinstance(tr, list):
@@ -200,87 +198,3 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                                               mom1_bytes, mom2_bytes, chan_bytes, spec_bytes,
                                               True)
                     await db_update_detection_unresolved(conn, True, [i['id'] for i in result])
-
-
-async def run_merge(config, run_name, param_list, sanity):
-    """Run SoFiA
-
-    """
-
-    # database configuration details
-    conf = config['SoFiAX']
-    host = conf['db_hostname']
-    name = conf['db_name']
-    username = conf['db_username']
-    password = conf['db_password']
-    execute = int(conf['sofia_execute'])
-    path = conf['sofia_path']
-
-    while len(param_list) > 0:
-        param_path = param_list.pop(0)
-        logging.info(f'Processing {param_path}')
-        params = await _parse_sofia_param_file(param_path)
-        cwd = os.path.dirname(os.path.abspath(param_path))
-        output_filename = _get_output_filename(params, cwd)
-
-        input_fits = params['input.data']
-        boundary = [int(i) for i in params['input.region'].split(',')]
-
-        if os.path.isabs(input_fits) is False:
-            input_fits = f"{cwd}/{os.path.basename(input_fits)}"
-
-        output_filename = params['output.filename']
-        if not output_filename:
-            output_filename = os.path.splitext(os.path.basename(input_fits))[0]
-
-        run_date = datetime.now()
-
-        # Connect to the database and enter details of the run.
-        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
-        try:
-            run = Run(run_name, sanity)
-            run = await db_run_upsert(conn, run)
-            instance = Instance(run.run_id, run_date, output_filename, boundary, None, None, None,
-                                params, None, None, None, None)
-            instance = await db_instance_upsert(conn, instance)
-        finally:
-            await conn.close()
-
-        # Running SoFiA in a subprocess
-        if execute == 1:
-            logging.info(f'Executing Sofia {param_path}')
-
-            sofia_cmd = f'{path} {param_path}'
-            proc = await asyncio.create_subprocess_shell(
-                sofia_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                env={'SOFIA2_PATH': os.path.dirname(path)},
-                cwd=cwd)
-
-            stdout, stderr = await proc.communicate()
-            instance.stdout = stdout
-            instance.stderr = stderr
-            instance.return_code = proc.returncode
-
-        # Take output from a completed SoFiA run
-        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
-        try:
-            # SoFiA completed successfully
-            if instance.return_code == 0 or instance.return_code is None:
-                logging.info(f'Sofia completed: {param_path}')
-                await match_merge_detections(conn, run, instance, cwd)
-            # Error in SoFiA run
-            else:
-                err = f'Sofia completed with return code: {instance.return_code}'
-                await db_instance_upsert(conn, instance)
-
-                logging.error(err)
-                logging.error(instance.stderr)
-
-                # no source(s) found, gracefully exit
-                if instance.return_code == 8:
-                    return
-                raise SystemError(err)
-        finally:
-            await conn.close()

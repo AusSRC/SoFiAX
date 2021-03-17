@@ -73,11 +73,3 @@ def _get_output_filename(params: dict, cwd: str):
     if not output_filename:
         output_filename = os.path.splitext(os.path.basename(input_fits))[0]
     return output_filename
-
-
-def _percentage_difference(v1, v2):
-    """Function to calculate the percentage difference between two values.
-    Used for comparing spatial and spectral extents.
-
-    """
-    return abs(v1 - v2) * 100 / ((abs(v1) + abs(v2)) / 2)
