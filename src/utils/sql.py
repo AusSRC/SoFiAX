@@ -1,8 +1,11 @@
 import json
-from schema import Run, Instance, Detection
+from sofiax.schema import Run, Instance, Detection
 
 
 async def db_run_upsert(conn, run: Run):
+    """Add a Run object into the database.
+
+    """
     run_id = await conn.fetchrow('INSERT INTO wallaby.run (name, sanity_thresholds) '
                                  'VALUES($1, $2) ON CONFLICT (name, sanity_thresholds) '
                                  'DO UPDATE SET name=EXCLUDED.name RETURNING id',
@@ -12,6 +15,9 @@ async def db_run_upsert(conn, run: Run):
 
 
 async def db_instance_upsert(conn, instance: Instance):
+    """Add an Instance object into the database.
+
+    """
     ins_id = await conn.fetchrow('INSERT INTO wallaby.instance (run_id, run_date, filename, boundary, flag_log, '
                                  'reliability_plot, log, parameters, version, return_code, stdout, stderr) '
                                  'VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) '

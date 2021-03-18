@@ -5,7 +5,7 @@ setup(
     version='0.1.0',
     author='',
     author_email='',
-    packages=['sofiax'],
+    packages=['src', 'src.utils'],
     url='',
     license='LICENSE.txt',
     description='SoFiAX',
@@ -18,6 +18,6 @@ setup(
     ],
     python_requires='>3.6',
     entry_points={
-        'console_scripts': ['sofiax=sofiax.main'],
+        'console_scripts': ['sofiax=src.sofiax:main'],
     }
 )

@@ -3,13 +3,13 @@ import xmltodict
 import logging
 from datetime import datetime
 
-from schema import Run, Instance
-from utils.sql import db_instance_upsert, \
+from sofiax.schema import Run, Instance
+from sofiax.utils.sql import db_instance_upsert, \
     db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved
-from utils.io import _get_parameter, _get_output_filename, \
+from sofiax.utils.io import _get_parameter, _get_output_filename, \
     _get_file_bytes
-from utils.calcs import _percentage_difference
+from sofiax.utils.calcs import _percentage_difference
 
 
 def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):

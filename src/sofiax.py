@@ -7,11 +7,11 @@ import argparse
 import sys
 from datetime import datetime
 
-from schema import Run, Detection, Instance
-from merge import merge_match_detection
-from utils.io import _get_output_filename, \
+from src.schema import Run, Detection, Instance
+from src.merge import merge_match_detection
+from src.utils.io import _get_output_filename, \
     _parse_sofia_param_file, _get_from_conf
-from utils.sql import db_run_upsert, db_instance_upsert
+from src.utils.sql import db_run_upsert, db_instance_upsert
 
 
 async def run(config, run_name, param_path, sanity):
@@ -148,7 +148,7 @@ async def _main():
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def main():
     """Run main function in an event loop.
 
     """
