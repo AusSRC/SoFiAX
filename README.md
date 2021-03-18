@@ -1,6 +1,7 @@
 # SoFiAX
 An [AusSRC](https://aussrc.org/) Project.
 
+[![Tests](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml)
 [![Linting](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml)
 [![Documentation](https://github.com/AusSRC/SoFiAX/actions/workflows/doc-coverage.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/doc-coverage.yml)
 

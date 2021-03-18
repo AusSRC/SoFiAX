@@ -17,5 +17,8 @@ jobs:
           key: ${{ runner.os }}-build-${{ env.cache-name }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
-      - run: pip3 install pytest
+      - run: pip3 install -r requirements.txt
+      # Check install works
+      - run: python3 setup.py install
+      # Check tests pass
       - run: cd tests && python -m unittest

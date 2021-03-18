@@ -15,8 +15,9 @@ async def db_run_upsert(conn, run: Run):
 
 
 async def db_instance_upsert(conn, instance: Instance):
-    """Add an Instance object into the database.
+    """!SQL Instance upsert operation
 
+    Add or update the Instance object into the database.
     """
     ins_id = await conn.fetchrow('INSERT INTO wallaby.instance (run_id, run_date, filename, boundary, flag_log, '
                                  'reliability_plot, log, parameters, version, return_code, stdout, stderr) '

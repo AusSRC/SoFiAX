@@ -5,10 +5,9 @@ from astropy.io import fits
 
 
 async def _parse_sofia_param_file(sofia_param_path: str):
-    """Read raw SoFiA parameter file into a dictionary.
+    """!Read raw SoFiA parameter file into a dictionary.
 
-    Args:
-        - sofia_param_path (str):   Absolute path to the SoFiA parameter file
+    @param sofia_param_path     Absolute path to the SoFiA parameter file
 
     Returns:
         - params (dict):            SoFiA parameter file values as a Python
@@ -27,7 +26,7 @@ async def _parse_sofia_param_file(sofia_param_path: str):
 
 
 async def _get_file_bytes(path: str, mode: str = 'rb'):
-    """Read a file as bytes.
+    """!Read a file as bytes.
 
     """
     buffer = []
@@ -45,9 +44,9 @@ async def _get_file_bytes(path: str, mode: str = 'rb'):
 
 
 def _get_from_conf(conf, name: str, *args, **kwargs):
-    """Get value from configuration file. Raise ValueError if
-    value is None.
+    """!Get value from configuration file.
 
+    Raise ValueError if value is None.
     """
     value = conf.get(name, *args, **kwargs)
     if value is None:
@@ -56,9 +55,9 @@ def _get_from_conf(conf, name: str, *args, **kwargs):
 
 
 def _get_parameter(name: str, params: dict, cwd: str):
-    """Generic method for retrieving parameter value from SoFiA parameter file.
-    Prepends current working directory if it is not absolute.
+    """!Retrieve value from SoFiA parameter file.
 
+    Prepends current working directory if it is not absolute.
     """
     param = params[name]
     if os.path.isabs(param) is False:
@@ -67,7 +66,7 @@ def _get_parameter(name: str, params: dict, cwd: str):
 
 
 def _get_output_filename(params: dict, cwd: str):
-    """Retrieve output filename from SoFiA parmameter file.
+    """!Retrieve output filename from SoFiA parmameter file.
 
     """
     input_fits = _get_parameter('input.data', params, cwd)
@@ -78,7 +77,7 @@ def _get_output_filename(params: dict, cwd: str):
 
 
 def _get_fits_header_property(file: str, property: str):
-    """Read FITS file header and metadata.
+    """!Read FITS file header and metadata.
 
     """
     if not os.path.isfile(file):

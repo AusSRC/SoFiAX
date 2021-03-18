@@ -22,15 +22,17 @@ from src.utils.sql import db_run_upsert, db_instance_upsert
 
 
 async def run(config, run_name, param_path, sanity):
-    """Run SoFiAX and/or SoFiA and write to database.
+    """!Run SoFiAX and/or SoFiA and write to database.
 
-    Args:
-        config              -
-        run_name            -
-        param_path (str)    - String for the path for the SoFiA parameter
-                              file.
-        sanity              -
+    Write SoFiA source finding output to the database specified in the
+    config file through SoFiAX. Users are allows to run SoFiA as part of
+    the execution of SoFiAX.
 
+    @param config       Config file argument
+    @param run_name     Run name
+    @param param_path   Location of the SoFiA parameter file (str)
+    @param sanity       Dictionary of flux, spatial and spectral extent
+                        values for sanity checking
     """
     # get database credentials from config
     conf = config['SoFiAX']
@@ -114,7 +116,7 @@ async def run(config, run_name, param_path, sanity):
 
 
 async def _main():
-    """The main function body.
+    """!Asynchronous main function.
 
     """
     # establish logger
@@ -169,8 +171,9 @@ async def _main():
 
 
 def main():
-    """Run main function in an event loop.
+    """!Main function entrypoint.
 
+    Runs the asynchronous main function in an event loop.
     """
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_main())

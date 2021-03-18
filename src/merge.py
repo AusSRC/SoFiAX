@@ -13,7 +13,9 @@ from sofiax.utils.calcs import _percentage_difference
 
 
 def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
-    """Compare flux values, spatial and spectral extent between two detections
+    """!Sanity check for flux, spatial and spectral extent.
+
+    Compare flux values, spatial and spectral extent between two detections
     that have been classified as a match. If values are unreasonable, return
     False. Otherwise, return True.
 
@@ -56,7 +58,9 @@ def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, san
 
 
 async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
-    """Strategy for handling new detections. If a match is identified with
+    """!Merge or match detections.
+
+    Strategy for handling new detections. If a match is identified with
     existing database entries, updates are automatically applied based on
     the heuristics implemented in the body of this function (no return).
     If there is no match the detection is merged by default.
@@ -100,12 +104,10 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
 
     # Iterate through content of the output catalogue
     # header of the table
-    tr = cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']
-    if not isinstance(tr, list):
-        tr = [tr]
-
+    tr = list(cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR'])
     for _, j in enumerate(tr):
         detect_dict = {}
+
         # row of table
         for i, item in enumerate(j['TD']):
             try:
