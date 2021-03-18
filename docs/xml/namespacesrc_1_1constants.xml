@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespacesrc_1_1constants" kind="namespace" language="Python">
+    <compoundname>src::constants</compoundname>
+      <sectiondef kind="var">
+      <memberdef kind="variable" id="constants_8py_1ac7b1f2c0945d268bf5a2597df37fbd56" prot="public" static="no" mutable="no">
+        <type>dictionary</type>
+        <definition>dictionary src::constants.DETECTION_SCHEMA</definition>
+        <argsstring></argsstring>
+        <name>DETECTION_SCHEMA</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/constants.py" line="1" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/constants.py" bodystart="1" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="constants_8py_1a627be174407ee216cb0fdaab8b0dc99f" prot="public" static="no" mutable="no">
+        <type>string</type>
+        <definition>string src::constants.VO_DATALINK_URL</definition>
+        <argsstring></argsstring>
+        <name>VO_DATALINK_URL</name>
+        <initializer>=  &apos;https://wallaby.aussrc.org/wallaby/vo/dl/dlmeta?ID=&apos;</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/constants.py" line="40" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/constants.py" bodystart="40" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/constants.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

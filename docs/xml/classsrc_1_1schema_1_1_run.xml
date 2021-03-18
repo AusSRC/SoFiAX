@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classsrc_1_1schema_1_1_run" kind="class" language="Python" prot="public">
+    <compoundname>src::schema::Run</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_run_1af02c9ca2e6a19b1342f55af21a31495f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Run::run_id</definition>
+        <argsstring></argsstring>
+        <name>run_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="50" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="50" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_run_1a1ec049ae45c2bc11f8814dc5e40b8c96" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Run::name</definition>
+        <argsstring></argsstring>
+        <name>name</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="51" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="51" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_run_1acf6e082bdbee8b3f65cea58353e12ca4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Run::sanity_thresholds</definition>
+        <argsstring></argsstring>
+        <name>sanity_thresholds</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="52" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="52" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classsrc_1_1schema_1_1_run_1a8add0508e83fef6aceffb7df91a8d00c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def src.schema.Run.__init__</definition>
+        <argsstring>(self, name, sanity_thresholds)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>name</type>
+          <defname>name</defname>
+        </param>
+        <param>
+          <type>sanity_thresholds</type>
+          <defname>sanity_thresholds</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="49" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="49" bodyend="54"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classsrc_1_1schema_1_1_run_1a9878c89939a23fec236e578770055c35" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def src.schema.Run.check_inputs</definition>
+        <argsstring>(dict sanity_thresholds)</argsstring>
+        <name>check_inputs</name>
+        <param>
+          <type>dict</type>
+          <declname>sanity_thresholds</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="56" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="56" bodyend="92"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="2">
+        <label>object</label>
+      </node>
+      <node id="1">
+        <label>src.schema.Run</label>
+        <link refid="classsrc_1_1schema_1_1_run"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="2">
+        <label>object</label>
+      </node>
+      <node id="1">
+        <label>src.schema.Run</label>
+        <link refid="classsrc_1_1schema_1_1_run"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+    </collaborationgraph>
+    <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="48" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="48" bodyend="93"/>
+    <listofallmembers>
+      <member refid="classsrc_1_1schema_1_1_run_1a8add0508e83fef6aceffb7df91a8d00c" prot="public" virt="non-virtual"><scope>src::schema::Run</scope><name>__init__</name></member>
+      <member refid="classsrc_1_1schema_1_1_run_1a9878c89939a23fec236e578770055c35" prot="public" virt="non-virtual"><scope>src::schema::Run</scope><name>check_inputs</name></member>
+      <member refid="classsrc_1_1schema_1_1_run_1a1ec049ae45c2bc11f8814dc5e40b8c96" prot="public" virt="non-virtual"><scope>src::schema::Run</scope><name>name</name></member>
+      <member refid="classsrc_1_1schema_1_1_run_1af02c9ca2e6a19b1342f55af21a31495f" prot="public" virt="non-virtual"><scope>src::schema::Run</scope><name>run_id</name></member>
+      <member refid="classsrc_1_1schema_1_1_run_1acf6e082bdbee8b3f65cea58353e12ca4" prot="public" virt="non-virtual"><scope>src::schema::Run</scope><name>sanity_thresholds</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

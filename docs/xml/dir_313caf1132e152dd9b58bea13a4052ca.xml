@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="dir_313caf1132e152dd9b58bea13a4052ca" kind="dir">
+    <compoundname>/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/utils</compoundname>
+    <innerfile refid="utils_2____init_____8py">__init__.py</innerfile>
+    <innerfile refid="calcs_8py">calcs.py</innerfile>
+    <innerfile refid="io_8py">io.py</innerfile>
+    <innerfile refid="sql_8py">sql.py</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/utils/"/>
+  </compounddef>
+</doxygen>

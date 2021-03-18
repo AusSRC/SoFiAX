@@ -1,3 +1,9 @@
+"""@package sofiax
+Main file for running sofiax.
+
+SoFiAX is a repository of code to take outputs of SoFiA-2 and store the content in databases.
+"""
+
 import os
 import asyncio
 import asyncpg
@@ -10,7 +16,8 @@ from datetime import datetime
 from src.schema import Run, Detection, Instance
 from src.merge import merge_match_detection
 from src.utils.io import _get_output_filename, \
-    _parse_sofia_param_file, _get_from_conf
+    _parse_sofia_param_file, _get_from_conf, _get_parameter, \
+    _get_fits_header_property
 from src.utils.sql import db_run_upsert, db_instance_upsert
 
 
@@ -41,7 +48,18 @@ async def run(config, run_name, param_path, sanity):
     # TODO(austin): the params file allows for the specification of
     # an output directory. This needs to be included here.
     output_filename = _get_output_filename(params, cwd)
-    boundary = [int(i) for i in params['input.region'].split(',')]
+
+    # NOTE: SoFiA-2 can be run without the boundary specified. if the boundary
+    # is none then we need to get the boundary from the input file.
+    if not params['input.region'].strip():
+        input_file = _get_parameter('input.data', params, cwd)
+        boundary = [
+            0, int(_get_fits_header_property(input_file, 'NAXIS1')),
+            0, int(_get_fits_header_property(input_file, 'NAXIS2')),
+            0, int(_get_fits_header_property(input_file, 'NAXIS3')),
+        ]
+    else:
+        boundary = [int(i) for i in params['input.region'].split(',')]
 
     # Connect to the database and enter details of the run.
     conn = await asyncpg.connect(user=username, password=password, database=name, host=host)

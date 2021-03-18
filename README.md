@@ -1,7 +1,7 @@
-[![Linting](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml)
-
 # SoFiAX
 An [AusSRC](https://aussrc.org/) Project.
+
+[![Linting](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml)
 
 ## Description
 

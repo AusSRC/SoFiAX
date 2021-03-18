@@ -1,0 +1,288 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="classsrc_1_1schema_1_1_instance" kind="class" language="Python" prot="public">
+    <compoundname>src::schema::Instance</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">object</basecompoundref>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a119f6d22932ddf4966c68d907c9c5586" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::instance_id</definition>
+        <argsstring></argsstring>
+        <name>instance_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="97" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="97" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1ae8ea1841fe4e074b90a499c62a411df4" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::run_id</definition>
+        <argsstring></argsstring>
+        <name>run_id</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="98" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="98" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a7e6400c4baf06d3638912b27c94f749a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::run_date</definition>
+        <argsstring></argsstring>
+        <name>run_date</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="99" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1ac3ac37b4b10ee92973e5c73491e2578b" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::filename</definition>
+        <argsstring></argsstring>
+        <name>filename</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="100" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="100" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a4a77e6290f7eeab4df3d0f0d9cecbad0" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::boundary</definition>
+        <argsstring></argsstring>
+        <name>boundary</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="101" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="101" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1ae0335ba30f7b55268c924d167858a004" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::flag_log</definition>
+        <argsstring></argsstring>
+        <name>flag_log</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="102" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="102" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a2c689fd609223abae55dca25de43a212" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::reliability_plot</definition>
+        <argsstring></argsstring>
+        <name>reliability_plot</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="103" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="103" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a696d6dcd2aa053fd224b1e9d8f1a9d4f" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::log</definition>
+        <argsstring></argsstring>
+        <name>log</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="104" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a89a6d1a89938770a64373a41538f86c8" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::params</definition>
+        <argsstring></argsstring>
+        <name>params</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="105" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="105" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a2c69603eccacfadc968fac338056d906" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::version</definition>
+        <argsstring></argsstring>
+        <name>version</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="106" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="106" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1ae622aab818126610f534ef42b05a45dc" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::return_code</definition>
+        <argsstring></argsstring>
+        <name>return_code</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="107" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="107" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a80f6037cb7ff7ef73c21b38b9f9eb46a" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::stdout</definition>
+        <argsstring></argsstring>
+        <name>stdout</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="108" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="108" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classsrc_1_1schema_1_1_instance_1a59e9825853a27d8496180f7b59551173" prot="public" static="no" mutable="no">
+        <type></type>
+        <definition>src.schema.Instance::stderr</definition>
+        <argsstring></argsstring>
+        <name>stderr</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="109" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classsrc_1_1schema_1_1_instance_1a6e2ac18b7d1c0021d2c380e1484643fc" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def src.schema.Instance.__init__</definition>
+        <argsstring>(self, run_id, run_date, filename, boundary, flag_log, reliability_plot, log, parameters, version, return_code, stdout, stderr)</argsstring>
+        <name>__init__</name>
+        <param>
+          <type>self</type>
+          <defname>self</defname>
+        </param>
+        <param>
+          <type>run_id</type>
+          <defname>run_id</defname>
+        </param>
+        <param>
+          <type>run_date</type>
+          <defname>run_date</defname>
+        </param>
+        <param>
+          <type>filename</type>
+          <defname>filename</defname>
+        </param>
+        <param>
+          <type>boundary</type>
+          <defname>boundary</defname>
+        </param>
+        <param>
+          <type>flag_log</type>
+          <defname>flag_log</defname>
+        </param>
+        <param>
+          <type>reliability_plot</type>
+          <defname>reliability_plot</defname>
+        </param>
+        <param>
+          <type>log</type>
+          <defname>log</defname>
+        </param>
+        <param>
+          <type>parameters</type>
+          <defname>parameters</defname>
+        </param>
+        <param>
+          <type>version</type>
+          <defname>version</defname>
+        </param>
+        <param>
+          <type>return_code</type>
+          <defname>return_code</defname>
+        </param>
+        <param>
+          <type>stdout</type>
+          <defname>stdout</defname>
+        </param>
+        <param>
+          <type>stderr</type>
+          <defname>stderr</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="94" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="96" bodyend="110"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <inheritancegraph>
+      <node id="1">
+        <label>src.schema.Instance</label>
+        <link refid="classsrc_1_1schema_1_1_instance"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>object</label>
+      </node>
+    </inheritancegraph>
+    <collaborationgraph>
+      <node id="1">
+        <label>src.schema.Instance</label>
+        <link refid="classsrc_1_1schema_1_1_instance"/>
+        <childnode refid="2" relation="public-inheritance">
+        </childnode>
+      </node>
+      <node id="2">
+        <label>object</label>
+      </node>
+    </collaborationgraph>
+    <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" line="93" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/schema.py" bodystart="93" bodyend="110"/>
+    <listofallmembers>
+      <member refid="classsrc_1_1schema_1_1_instance_1a6e2ac18b7d1c0021d2c380e1484643fc" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>__init__</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a4a77e6290f7eeab4df3d0f0d9cecbad0" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>boundary</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1ac3ac37b4b10ee92973e5c73491e2578b" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>filename</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1ae0335ba30f7b55268c924d167858a004" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>flag_log</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a119f6d22932ddf4966c68d907c9c5586" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>instance_id</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a696d6dcd2aa053fd224b1e9d8f1a9d4f" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>log</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a89a6d1a89938770a64373a41538f86c8" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>params</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a2c689fd609223abae55dca25de43a212" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>reliability_plot</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1ae622aab818126610f534ef42b05a45dc" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>return_code</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a7e6400c4baf06d3638912b27c94f749a" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>run_date</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1ae8ea1841fe4e074b90a499c62a411df4" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>run_id</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a59e9825853a27d8496180f7b59551173" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>stderr</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a80f6037cb7ff7ef73c21b38b9f9eb46a" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>stdout</name></member>
+      <member refid="classsrc_1_1schema_1_1_instance_1a2c69603eccacfadc968fac338056d906" prot="public" virt="non-virtual"><scope>src::schema::Instance</scope><name>version</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

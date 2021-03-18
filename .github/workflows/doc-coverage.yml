@@ -1,0 +1,33 @@
+# Require > 80% documentation coverage or fail test
+name: Documentation Coverage
+on: [push]
+jobs:
+  documentation-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository   
+      - uses: actions/checkout@v2
+
+      # Install dependencies, run Doxygen 
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y jq lcov doxygen
+      - run: cd docs && doxygen Doxyfile && cd ..
+
+      # Install python3 and coverxygen (coverage report)  
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.0'
+          architecture: 'x64'
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+      - run: pip3 install coverxygen
+
+      # Measure coverage
+      - run: python3 -m coverxygen --xml-dir ./docs/xml --src-dir ./src --output docs-coverage.json --format json-v3
+      - run: python3 -m coverxygen --xml-dir ./docs/xml --src-dir ./src --output docs-coverage.info
+      - run: if [[ $(cat docs-coverage.json | jq '.total.coverage_rate') < 0.8 ]] ; then lcov --list docs-coverage.info && exit 1; else lcov --list docs-coverage.info && exit 0 ; fi

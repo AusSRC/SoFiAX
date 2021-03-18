@@ -1,3 +1,4 @@
+astropy==4.2
 aiofiles
 asyncpg
 xmltodict

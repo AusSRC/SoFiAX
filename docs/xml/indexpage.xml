@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="indexpage" kind="page">
+    <compoundname>index</compoundname>
+    <title>SoFiAX</title>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><anchor id="index_1md_main"/>An <ulink url="https://aussrc.org/">AusSRC</ulink> Project.</para>
+<sect1 id="index_1autotoc_md1">
+<title>Description</title>
+<para>This project extends the capability of the <ulink url="https://github.com/SoFiA-Admin/SoFiA-2">SoFiA-2</ulink> source finding application for H1 sources by executing and automatically merging, resolving and inserting extracted sources into a database for further inspection and analysis. If there any source conflicts which can not be resolved, the user is invited to resolve them manually through SoFiAX&apos;s web portal. </para>
+</sect1>
+    </detaileddescription>
+    <location file="main.md"/>
+  </compounddef>
+</doxygen>

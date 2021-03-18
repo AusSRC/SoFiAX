@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespacesrc_1_1sofiax" kind="namespace" language="Python">
+    <compoundname>src::sofiax</compoundname>
+      <sectiondef kind="func">
+      <memberdef kind="function" id="namespacesrc_1_1sofiax_1a651b74a81a506572fda097c8fa9ed32d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def src.sofiax.run</definition>
+        <argsstring>(config, run_name, param_path, sanity)</argsstring>
+        <name>run</name>
+        <param>
+          <type>config</type>
+          <defname>config</defname>
+        </param>
+        <param>
+          <type>run_name</type>
+          <defname>run_name</defname>
+        </param>
+        <param>
+          <type>param_path</type>
+          <defname>param_path</defname>
+        </param>
+        <param>
+          <type>sanity</type>
+          <defname>sanity</defname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Run SoFiAX and/or SoFiA and write to database.
+
+Args:
+    config              -
+    run_name            -
+    param_path (str)    - String for the path for the SoFiA parameter
+                          file.
+    sanity              -</verbatim> </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" line="24" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" bodystart="24" bodyend="113"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacesrc_1_1sofiax_1a5ff4ce6d0e082a2f730c5f67c17ed055" prot="private" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def src.sofiax._main</definition>
+        <argsstring>()</argsstring>
+        <name>_main</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>The main function body.</verbatim> </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" line="114" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" bodystart="114" bodyend="168"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacesrc_1_1sofiax_1a0b60d79d6a0390cab14cbaad6f688a9c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>def</type>
+        <definition>def src.sofiax.main</definition>
+        <argsstring>()</argsstring>
+        <name>main</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><verbatim>Run main function in an event loop.</verbatim> </para>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" line="169" column="1" bodyfile="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" bodystart="169" bodyend="175"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><verbatim>@package sofiax
+Main file for running sofiax.
+
+SoFiAX is a repository of code to take outputs of SoFiA-2 and store the content in databases.
+</verbatim> </para>
+    </detaileddescription>
+    <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/sofiax.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

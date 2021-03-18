@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.9.1" xml:lang="en-US">
+  <compounddef id="namespacesrc_1_1utils" kind="namespace" language="Python">
+    <compoundname>src::utils</compoundname>
+    <innernamespace refid="namespacesrc_1_1utils_1_1calcs">src::utils::calcs</innernamespace>
+    <innernamespace refid="namespacesrc_1_1utils_1_1io">src::utils::io</innernamespace>
+    <innernamespace refid="namespacesrc_1_1utils_1_1sql">src::utils::sql</innernamespace>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/Users/she393/Dropbox/projects/RADEC/portal/SoFiAX/src/utils/__init__.py" line="1" column="1"/>
+  </compounddef>
+</doxygen>

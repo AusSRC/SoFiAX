@@ -1,6 +1,7 @@
 import os
 import aiofiles
 import configparser
+from astropy.io import fits
 
 
 async def _parse_sofia_param_file(sofia_param_path: str):
@@ -51,6 +52,7 @@ def _get_from_conf(conf, name: str, *args, **kwargs):
     value = conf.get(name, *args, **kwargs)
     if value is None:
         raise ValueError(f'{name} is not defined in configuration.')
+    return value
 
 
 def _get_parameter(name: str, params: dict, cwd: str):
@@ -73,3 +75,14 @@ def _get_output_filename(params: dict, cwd: str):
     if not output_filename:
         output_filename = os.path.splitext(os.path.basename(input_fits))[0]
     return output_filename
+
+
+def _get_fits_header_property(file: str, property: str):
+    """Read FITS file header and metadata.
+
+    """
+    if not os.path.isfile(file):
+        raise ValueError("File does not exist.")
+
+    hdul = fits.open(file)
+    return hdul[0].header[property]
