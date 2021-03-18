@@ -1,7 +1,8 @@
 class Detection(object):
-    """Constants for a SoFiA detection object.
-    Includes SCHEMA and VO_DATALINK_URL
+    """!Detection constants class.
 
+    Constants for a SoFiA detection object.
+    Includes SCHEMA and VO_DATALINK_URL
     """
     SCHEMA = {
         "name": None,
@@ -46,7 +47,20 @@ class Detection(object):
 
 
 class Run(object):
+    """!Run model class.
+
+    Represents Run table in WALLABY database. Implements methods for checking
+    values of runs are reasonable.
+    """
     def __init__(self, name, sanity_thresholds):
+        """!Run model initialiser.
+
+        Does some stuff you know...
+
+        @param name                 Name of the Run.
+        @param sanity_thresholds    Flux, spatial and spectral thresholds
+                                    for sanity checking.
+        """
         self.run_id = None
         self.name = name
         self.sanity_thresholds = sanity_thresholds
@@ -54,6 +68,12 @@ class Run(object):
 
     @staticmethod
     def check_inputs(sanity_thresholds: dict):
+        """Static method to check...
+
+        @param sanity_thresholds    Flux, spatial and spectral thresholds
+                                    for sanity checking.
+
+        """
         # TODO(austin): refactor these try excepts
         try:
             flux = sanity_thresholds['flux']
@@ -91,9 +111,17 @@ class Run(object):
 
 
 class Instance(object):
+    """!Instance model class.
+
+    Represents Instance table in WALLABY database. Has properties that
+    mirror the schema.
+    """
     def __init__(self, run_id, run_date, filename, boundary, flag_log,
                  reliability_plot, log, parameters,
                  version, return_code, stdout, stderr):
+        """!Instance model initialiser.
+
+        """
         self.instance_id = None
         self.run_id = run_id
         self.run_date = run_date

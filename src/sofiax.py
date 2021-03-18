@@ -93,11 +93,13 @@ async def run(config, run_name, param_path, sanity):
     try:
         # SoFiA completed successfully
         if instance.return_code == 0 or instance.return_code is None:
-            logging.info(f'SoFiA completed: {param_path}')
+            if execute_sofia:
+                logging.info(f'SoFiA completed: {param_path}')
             await merge_match_detection(conn, run, instance, cwd)
         # Error in SoFiA run
         else:
-            err = f'SoFiA completed with return code: {instance.return_code}'
+            if execute_sofia:
+                err = f'SoFiA completed with return code: {instance.return_code}'
             await db_instance_upsert(conn, instance)
 
             logging.error(err)
