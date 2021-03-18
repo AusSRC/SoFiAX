@@ -1,3 +1,6 @@
+[![Linting](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/lint.yml)
+[![Documentation Coverage](https://github.com/AusSRC/SoFiAX/actions/workflows/doc-coverage.yml/badge.svg?branch=refactor_austin)](https://github.com/AusSRC/SoFiAX/actions/workflows/doc-coverage.yml)
+
 # SoFiAX
 An [AusSRC](https://aussrc.org/) Project.
 

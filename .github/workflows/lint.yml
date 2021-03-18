@@ -18,5 +18,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
       - run: pip3 install pycodestyle
-      - run: pycodestyle sofiax
-      - run: pycdoestyle setup.py
+      - run: pycodestyle src
