@@ -102,7 +102,7 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
         # TODO(austin): read about transactions
         async with conn.transaction():
             # result is a list of conflicting sources.
-            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma']) 
+            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma'])
 
             # No detections, enter detection into database
             if len(result) == 0:

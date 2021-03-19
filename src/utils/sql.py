@@ -1,3 +1,8 @@
+"""SQL commands for interacting with database.
+
+Called via Python wrapper functions.
+"""
+
 import json
 from src.schema import Run, Instance, Detection
 
@@ -8,7 +13,8 @@ async def db_run_upsert(conn, run: Run):
     """
     run_id = await conn.fetchrow('INSERT INTO wallaby.run (name, sanity_thresholds) '
                                  'VALUES($1, $2) ON CONFLICT (name, sanity_thresholds) '
-                                 'DO UPDATE SET name=EXCLUDED.name RETURNING id',
+                                 'DO UPDATE SET name=EXCLUDED.name '
+                                 'RETURNING id',
                                  run.name, json.dumps(run.sanity_thresholds))
     run.run_id = run_id[0]
     return run
@@ -19,8 +25,8 @@ async def db_instance_upsert(conn, instance: Instance):
 
     Add or update the Instance object into the database.
     """
-    ins_id = await conn.fetchrow('INSERT INTO wallaby.instance (run_id, run_date, filename, boundary, flag_log, '
-                                 'reliability_plot, log, parameters, version, return_code, stdout, stderr) '
+    ins_id = await conn.fetchrow('INSERT INTO wallaby.instance '
+                                 '(run_id, run_date, filename, boundary, flag_log, reliability_plot, log, parameters, version, return_code, stdout, stderr) '  # noqa
                                  'VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) '
                                  'ON CONFLICT (run_id, filename, boundary) '
                                  'DO UPDATE SET '
@@ -55,14 +61,15 @@ async def db_source_match(conn, run_id: int, detection: dict, uncertainty_sigma:
     err_y = detection['err_y']
     err_z = detection['err_z']
 
-    result = await conn.fetch('SELECT d.id, d.instance_id, i.boundary, x, y, z, f_sum, ell_maj, ell_min, w50, w20, flag, unresolved '
+    result = await conn.fetch('SELECT d.id, d.instance_id, i.boundary, x, y, z, f_sum, ell_maj, ell_min, w50, w20, flag, unresolved '  # noqa
                               'FROM wallaby.detection as d, wallaby.instance as i '
                               'WHERE ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
-                              f'<= {uncertainty_sigma} * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '
-                              'COALESCE(NULLIF((($1 - x)^2 + ($2 - y)^2), 0), 1)) AND '
-                              'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
-                              f'<= {uncertainty_sigma} * SQRT($6 ^ 2 + err_z ^ 2) AND '
-                              'd.instance_id = i.id AND i.run_id = $7 ORDER BY d.id ASC FOR UPDATE OF d',
+                              f'<= {uncertainty_sigma} * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '  # noqa
+                              'COALESCE(NULLIF((($1 - x)^2 + ($2 - y)^2), 0), 1)) '
+                              'AND ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '
+                              f'<= {uncertainty_sigma} * SQRT($6 ^ 2 + err_z ^ 2) '
+                              'AND d.instance_id = i.id AND i.run_id = $7 '
+                              'ORDER BY d.id ASC FOR UPDATE OF d',
                               x, y, z, err_x, err_y, err_z, run_id)
 
     for i, j in enumerate(result):
