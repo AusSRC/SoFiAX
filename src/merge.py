@@ -1,60 +1,18 @@
-import random
+"""Merge strategy.
+
+"""
+
 import xmltodict
 import logging
 from datetime import datetime
 
-from sofiax.schema import Run, Instance
-from sofiax.utils.sql import db_instance_upsert, \
+from src.schema import Run, Instance
+from src.utils.sql import db_instance_upsert, \
     db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved
-from sofiax.utils.io import _get_parameter, _get_output_filename, \
+from src.utils.io import _get_parameter, _get_output_filename, \
     _get_file_bytes
-from sofiax.utils.calcs import _percentage_difference
-
-
-def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
-    """!Sanity check for flux, spatial and spectral extent.
-
-    Compare flux values, spatial and spectral extent between two detections
-    that have been classified as a match. If values are unreasonable, return
-    False. Otherwise, return True.
-
-    Args:
-        flux (tuple)                - Flux values to compare
-        spatial_extent (tuple)      - Spatial extent of detections to compare
-        spectral_extent (tuple)     - Spectral extent of detections to compare
-        sanity_thresholds (dict)    - Sanity threshold dictated by the Run?
-
-    Returns (bool):
-        True  - Detection passes sanity check.
-        False - Requires manual separation, add
-                ref to UnresolvedDetection
-    """
-    # Compare flux values
-    f1, f2 = flux
-    flux_difference = _percentage_difference(f1, f2)
-    if flux_difference > sanity_thresholds['flux']:
-        return False
-
-    # Compare spatial extent
-    min_extent, max_extent = sanity_thresholds['spatial_extent']
-    max1, max2, min1, min2 = spatial_extent
-    max_diff = _percentage_difference(max1, max2)
-    min_diff = _percentage_difference(min1, min2)
-
-    if (max_diff > max_extent) or (min_diff > min_extent):
-        return False
-
-    # Compare spectral extent
-    min_extent, max_extent = sanity_thresholds['spectral_extent']
-    max1, max2, min1, min2 = spectral_extent
-    max_diff = _percentage_difference(max1, max2)
-    min_diff = _percentage_difference(min1, min2)
-
-    if (max_diff > max_extent) or (min_diff > min_extent):
-        return False
-
-    return True
+from src.utils.calcs import sanity_check, _distance_from_cube_boundary
 
 
 async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
@@ -93,6 +51,7 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
             instance.version = j['@value']
             break
 
+    # Instance is written to database
     instance.run_date = datetime.strptime(run_date, '%a, %d %b %Y, %H:%M:%S')
     instance.reliability_plot = await _get_file_bytes(f"{output_dir}/{output_filename}_rel.eps")
     instance = await db_instance_upsert(conn, instance)
@@ -143,7 +102,7 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
         # TODO(austin): read about transactions
         async with conn.transaction():
             # result is a list of conflicting sources.
-            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma'])
+            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma']) 
 
             # No detections, enter detection into database
             if len(result) == 0:
@@ -177,10 +136,12 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
                                                       mom2_bytes, chan_bytes, spec_bytes,
                                                       db_detect['unresolved'])
 
-                        # Random selection of detection
-                        # TODO(austin): Update this according to Tobias' request
+                        # Select detection based on distance to boundary.
+                        # TODO(austin): Write tests to verify this works as expected.
                         elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:
-                            if bool(random.getrandbits(1)) is True:
+                            candidate_dist = _distance_from_cube_boundary(detect_dict, instance.boundary)
+                            current_dist = _distance_from_cube_boundary(db_detect, db_detect['boundary'])
+                            if candidate_dist > current_dist:
                                 logging.info(f"Replacing, Name: {detect_dict['name']} Details: flag 0 with "
                                              f"flag 0 or flag 4 with flag 4")
                                 await db_delete_detection(conn, db_detect['id'])
@@ -188,6 +149,7 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
                                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                                           mom2_bytes, chan_bytes, spec_bytes,
                                                           db_detect['unresolved'])
+
                         # Reconciled?
                         resolved = True
                         break

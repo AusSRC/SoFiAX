@@ -1,5 +1,5 @@
 import json
-from sofiax.schema import Run, Instance, Detection
+from src.schema import Run, Instance, Detection
 
 
 async def db_run_upsert(conn, run: Run):
@@ -55,9 +55,9 @@ async def db_source_match(conn, run_id: int, detection: dict, uncertainty_sigma:
     err_y = detection['err_y']
     err_z = detection['err_z']
 
-    result = await conn.fetch('SELECT d.id, d.instance_id, x, y, z, f_sum, ell_maj, ell_min, w50, w20, '
-                              'flag, unresolved FROM wallaby.detection as d, wallaby.instance as i WHERE '
-                              'ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
+    result = await conn.fetch('SELECT d.id, d.instance_id, i.boundary, x, y, z, f_sum, ell_maj, ell_min, w50, w20, flag, unresolved '
+                              'FROM wallaby.detection as d, wallaby.instance as i '
+                              'WHERE ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) '
                               f'<= {uncertainty_sigma} * SQRT((($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) / '
                               'COALESCE(NULLIF((($1 - x)^2 + ($2 - y)^2), 0), 1)) AND '
                               'ST_3DDistance(geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) '

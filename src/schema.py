@@ -135,3 +135,23 @@ class Instance(object):
         self.return_code = return_code
         self.stdout = stdout
         self.stderr = stderr
+
+    def asdict(self):
+        """!Convert Instance object to dictionary of member variables.
+
+        """
+        return {
+            'instance_id': self.instance_id,
+            'run_id': self.run_id,
+            'run_date': self.run_date,
+            'filename': self.filename,
+            'boundary': self.boundary,
+            'flag_log': self.flag_log,
+            'reliability_plot': self.reliability_plot,
+            'log': self.log,
+            'params': self.params,
+            'version': self.version,
+            'return_code': self.return_code,
+            'stdout': self.stdout,
+            'stderr': self.stderr
+        }

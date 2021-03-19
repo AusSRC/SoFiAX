@@ -5,7 +5,7 @@ setup(
     version='0.1.0',
     author='',
     author_email='',
-    packages=['src', 'src.utils'],
+    packages=['src.utils', 'src'],
     url='',
     license='LICENSE.txt',
     description='SoFiAX',
