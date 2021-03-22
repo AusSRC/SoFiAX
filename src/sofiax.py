@@ -1,7 +1,8 @@
 """@package sofiax
 Main file for running sofiax.
 
-SoFiAX is a repository of code to take outputs of SoFiA-2 and store the content in databases.
+SoFiAX is a repository of code to take outputs of SoFiA-2 and store the
+content in databases.
 """
 
 import os
@@ -93,11 +94,15 @@ async def run(config, run_name, param_path, sanity):
     # Take output from a completed SoFiA run
     conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
     try:
-        # SoFiA completed successfully
+        # SoFiA completed successfully, can start running SoFiAX
         if instance.return_code == 0 or instance.return_code is None:
             if execute_sofia:
                 logging.info(f'SoFiA completed: {param_path}')
             await merge_match_detection(conn, run, instance, cwd)
+
+            # TODO(austin): any other functions to run?
+            # e.g. await name_match_check(conn, run, instance, cwd)...
+
         # Error in SoFiA run
         else:
             if execute_sofia:
@@ -141,6 +146,9 @@ async def _main():
     config.read(args.conf)
     conf = config['SoFiAX']
 
+    # Sofia params
+    sofia_params = args.param[0]
+
     processes = int(_get_from_conf(conf, 'sofia_processes', 0))
     run_name = _get_from_conf(conf, 'run_name', None)
     spatial = _get_from_conf(conf, 'spatial_extent', None).replace(' ', '').split(',')
@@ -160,7 +168,7 @@ async def _main():
     Run.check_inputs(sanity)
 
     task_list = [
-        asyncio.create_task(run(config, run_name, args.param[0], sanity)) for _ in range(processes)
+        asyncio.create_task(run(config, run_name, sofia_params, sanity)) for _ in range(processes)
     ]
 
     try:

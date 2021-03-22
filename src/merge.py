@@ -18,7 +18,7 @@ from src.utils.calcs import sanity_check, _distance_from_cube_boundary
 async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
     """!Merge or match detections.
 
-    Strategy for handling new detections. If a match is identified with
+    Strategy for handling new detections. If a duplicate is identified with
     existing database entries, updates are automatically applied based on
     the heuristics implemented in the body of this function (no return).
     If there is no match the detection is merged by default.
@@ -150,6 +150,8 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
                                                           mom2_bytes, chan_bytes, spec_bytes,
                                                           db_detect['unresolved'])
 
+                        # TODO(austin): Automated method for checking if detection is component of another detection?
+
                         # Reconciled?
                         resolved = True
                         break
@@ -162,3 +164,6 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
                                               mom1_bytes, mom2_bytes, chan_bytes, spec_bytes,
                                               True)
                     await db_update_detection_unresolved(conn, True, [i['id'] for i in result])
+
+            # TODO(austin): Source name check?
+            # Here we can write another query

@@ -1,8 +1,32 @@
 name: Tests
 on: [push]
 jobs:
-  # Run tests
-  python-lint:
+  # Run functional test 
+  # Compares the output of SoFiAX execution against a known reference.
+  functional-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.0'
+          architecture: 'x64'
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+      - run: pip3 install -r requirements.txt
+      # TODO(austin): Need to store the collection of files somewhere and pull them here.
+      - run: python3 setup.py install
+      - run: sofiax -c test_case/config.ini -p test_case/sofia.par
+      # The only difference in the file should be the datetime line.
+      - run: if [[ $(diff test_case/output/sofia_test_output_cat.txt test_case/reference_output/sofia_test_output_cat.txt | grep "^>" | wc -l) > 1 ]] ; then exit 1; else exit 0 ; fi
+  
+  # Run unit tests
+  unit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
