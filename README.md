@@ -83,7 +83,7 @@ Create a SoFiA-2 param file with a minimum:
 
 ### Run SofiAX (sofiax):
 
- ```
+```
 usage: sofiax.py [-h] -c CONF -p PARAM [PARAM ...]
 
 Sofia standalone execution.
@@ -93,11 +93,12 @@ optional arguments:
   -c CONF, --conf CONF  configuration file
   -p PARAM [PARAM ...], --param PARAM [PARAM ...]
                         sofia parameter file
-  ```
+```
  
 ### Example:
 
 Run SoFiA with test.par  
+
 ```
 sofiax -c config.ini -p test.par
 ```
@@ -106,7 +107,8 @@ sofiax -c config.ini -p test.par
 
 Run multiple jobs across a slurm cluster
 
-sofia.sh
+`sofia.sh`
+
 ```
 #!/bin/bash
 
@@ -124,7 +126,8 @@ module load python/3.7.4
 source /<env path>/env/bin/activate && sofiax -c $1 -p $2
 ```
 
-run.sh
+`run.sh`
+
 ```
 #!/bin/bash
 
@@ -133,4 +136,15 @@ for i in "${param[@]}"
 do
     sbatch ./sofia.sh /<config file path>/config.ini /<sofia par dir>/sofia_$i.par
 done
+```
+
+
+## Testing
+
+We have written some tests for this repository. Some of the tests will require you to download the `test_case` folder containing configuration and parameter files.
+
+To run the unit tests
+
+```
+cd tests && python -m unittest
 ```
