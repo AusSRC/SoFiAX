@@ -1,0 +1,22 @@
+name: Functional tests
+on: [push]
+jobs:
+  test_case:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.0'
+          architecture: 'x64'
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+      - run: pip3 install -r requirements.txt
+      - run: python3 setup.py install
+      - run: cp -r /home/ubuntu/data/test_case test_case
+      - run: sofiax -c test_case/config.ini -p test_case/sofia.par
