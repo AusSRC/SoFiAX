@@ -244,15 +244,11 @@ async def run_merge(config, run_name, param_list, sanity):
     execute = int(conf['sofia_execute'])
     path = conf['sofia_path']
 
-    print(len(param_list))
-
     while len(param_list) > 0:
         param_path = param_list.pop(0)
 
         logging.info(f'Processing {param_path}')
-        print('pre await')
         params = await parse_sofia_param_file(param_path)
-        print('post await')
         param_cwd = os.path.dirname(os.path.abspath(param_path))
 
         input_fits = params['input.data']
@@ -266,18 +262,14 @@ async def run_merge(config, run_name, param_list, sanity):
             output_filename = os.path.splitext(os.path.basename(input_fits))[0]
 
         run_date = datetime.now()
-        print(run_date)
 
-        print('pre conn')
         conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
-        print('post conn')
         try:
             run = Run(run_name, sanity)
             run = await db_run_upsert(conn, run)
             instance = Instance(run.run_id, run_date, output_filename, boundary, None, None, None,
                                 params, None, None, None, None)
             instance = await db_instance_upsert(conn, instance)
-            print(instance)
         finally:
             await conn.close()
 
@@ -301,9 +293,7 @@ async def run_merge(config, run_name, param_list, sanity):
         try:
             if instance.return_code == 0 or instance.return_code is None:
                 logging.info(f'Sofia completed: {param_path}')
-                print('pre merge')
                 await match_merge_detections(conn, run, instance, param_cwd)
-                print('post merge')
             else:
                 err = f'Sofia completed with return code: {instance.return_code}'
                 await db_instance_upsert(conn, instance)
