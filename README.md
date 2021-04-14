@@ -20,7 +20,7 @@ Source code for SoFiAX database, TAP service and Admin Console can be found in t
 ## Installation
 
 ### Requirements:
-  * Python >= 3.7
+  * Python >= 3.8
   * SoFiA-2
 
 ### Install code base to run SoFiAX:
@@ -138,7 +138,6 @@ do
 done
 ```
 
-
 ## Testing
 
 We have written some tests for this repository. Some of the tests will require you to download the `test_case` folder containing configuration and parameter files.
@@ -146,5 +145,5 @@ We have written some tests for this repository. Some of the tests will require y
 To run the unit tests
 
 ```
-cd tests && python -m unittest
+python -m unittest tests.tests_sofiax_arguments
 ```
