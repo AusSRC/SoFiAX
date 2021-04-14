@@ -137,13 +137,3 @@ do
     sbatch ./sofia.sh /<config file path>/config.ini /<sofia par dir>/sofia_$i.par
 done
 ```
-
-## Testing
-
-We have written some tests for this repository. Some of the tests will require you to download the `test_case` folder containing configuration and parameter files.
-
-To run the unit tests
-
-```
-python -m unittest tests.tests_sofiax_arguments
-```
