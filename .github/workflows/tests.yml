@@ -40,8 +40,14 @@ jobs:
       - run: cp -r /home/ubuntu/data/test_case test_case
       - run: sofiax -c test_case/config.ini -p test_case/sofia.par
 
-      # check sofiax database content and cleanup
-      - run: sh /home/ubuntu/scripts/test_case_output.sh
+      # store database query in file
+      - name: Check database content
+        env:
+          PGPASSWORD: ${{ secrets.PGPASSWORD }}
+        run: |
+          sh /home/ubuntu/scripts/test_case_output.sh
+
+      # compare database content and cleanup
       - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/test_case/reference_detection_count || exit 1
       - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/test_case/reference_detection_output  || exit 1
       - run: sh /home/ubuntu/scripts/cleanup.sh
