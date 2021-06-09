@@ -107,6 +107,7 @@ async def merge_match_detection(conn, run: Run, instance: Instance, cwd: str):
             # No detections, enter detection into database
             if len(result) == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
+                # TODO(austin): Assert this is called and other 'paths' are not
                 await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
                                           cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                                           mom2_bytes, chan_bytes, spec_bytes)

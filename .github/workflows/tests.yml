@@ -2,6 +2,7 @@ name: Tests
 on: [push]
 jobs:
   # Run functional test 
+  # TODO(austin): Test the use of multiple parameter files
   # Compares the output of SoFiAX execution against a known reference.
   functional-test:
     runs-on: ubuntu-latest

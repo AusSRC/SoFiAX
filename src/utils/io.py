@@ -16,7 +16,7 @@ async def _parse_sofia_param_file(sofia_param_path: str):
     content_bytes = await _get_file_bytes(sofia_param_path, mode='r')
     file_contents = f"[dummy_section]\n{content_bytes}"
 
-    # Detectionruct params from file contents
+    # Detection params from file contents
     params = {}
     config = configparser.RawConfigParser()
     config.read_string(file_contents)

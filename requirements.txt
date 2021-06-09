@@ -1,6 +1,6 @@
-astropy==4.2
 aiofiles
 asyncpg
 xmltodict
-pytest==6.2.2
 numpy==1.20.1
+astropy==4.2.0
+pytest==6.2.2

@@ -14,10 +14,9 @@ setup(
         "aiofiles",
         "asyncpg",
         "xmltodict",
-        "astropy"
     ],
     python_requires='>3.6',
     entry_points={
-        'console_scripts': ['sofiax=src.sofiax:main'],
+        'console_scripts': ['sofiax=src.main:main'],
     }
 )
