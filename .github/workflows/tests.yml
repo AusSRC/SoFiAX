@@ -36,18 +36,6 @@ jobs:
       # compare database content and cleanup
       - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/database_write/reference_detection_count || exit 1
       - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/database_write/reference_detection_output  || exit 1
-      - run: |
-        psql -h localhost -d sofiadb << EOF
-          DELETE FROM wallaby.products;
-          DELETE FROM wallaby.detection;
-          DELETE FROM wallaby.sources;
-          DELETE FROM wallaby.instance;
-          DELETE FROM wallaby.run;
-
-          DELETE FROM wallaby.comments;
-          DELETE FROM wallaby.tag_detection;
-          DELETE FROM wallaby.tag;
-        EOF
 
   # Run SoFiAX as a wrapper for SoFiA
   # Ensure there are no errors.
