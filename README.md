@@ -1,6 +1,8 @@
 # SoFiAX
 An [AusSRC](https://aussrc.org/) Project.
 
+[![Functional tests](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml)
+
 ## Description
 
 This project extends the capability of the [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2 "SoFiA-2") source finding application for H1 sources by executing and automatically merging, resolving and inserting extracted sources into a database for further inspection and analysis. If there any source conflicts which can not be resolved, the user is invited to resolve them manually through SoFiAX's web portal. 
@@ -20,7 +22,7 @@ Source code for SoFiAX database, TAP service and Admin Console can be found in t
 ## Installation
 
 ### Requirements:
-  * Python >= 3.7
+  * Python >= 3.8
   * SoFiA-2
 
 ### Install code base to run SoFiAX:
@@ -83,7 +85,7 @@ Create a SoFiA-2 param file with a minimum:
 
 ### Run SofiAX (sofiax):
 
- ```
+```
 usage: sofiax.py [-h] -c CONF -p PARAM [PARAM ...]
 
 Sofia standalone execution.
@@ -93,11 +95,12 @@ optional arguments:
   -c CONF, --conf CONF  configuration file
   -p PARAM [PARAM ...], --param PARAM [PARAM ...]
                         sofia parameter file
-  ```
+```
  
 ### Example:
 
 Run SoFiA with test.par  
+
 ```
 sofiax -c config.ini -p test.par
 ```
@@ -106,7 +109,8 @@ sofiax -c config.ini -p test.par
 
 Run multiple jobs across a slurm cluster
 
-sofia.sh
+`sofia.sh`
+
 ```
 #!/bin/bash
 
@@ -124,7 +128,8 @@ module load python/3.7.4
 source /<env path>/env/bin/activate && sofiax -c $1 -p $2
 ```
 
-run.sh
+`run.sh`
+
 ```
 #!/bin/bash
 

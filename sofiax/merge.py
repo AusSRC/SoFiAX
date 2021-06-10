@@ -11,7 +11,7 @@ import asyncpg
 
 from datetime import datetime
 
-from .db import db_run_upsert, db_instance_upsert, \
+from sofiax.db import db_run_upsert, db_instance_upsert, \
     db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved, Run, Instance
 
