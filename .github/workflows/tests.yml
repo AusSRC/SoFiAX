@@ -36,6 +36,7 @@ jobs:
       # compare database content and cleanup
       - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/database_write/reference_detection_count || exit 1
       - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/database_write/reference_detection_output  || exit 1
+      - run: sh $HOME/scripts/cleanup.sh
 
   # Run SoFiAX as a wrapper for SoFiA
   # Ensure there are no errors.
