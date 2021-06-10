@@ -6,8 +6,8 @@ name: Functional tests
 on: [push]
 jobs:
   # Run SoFiAX just to write an existing output from SoFiA
-  # to the database
-  extract_single:  
+  # to the database. Ensure that the output is consistent.
+  database_write:  
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +24,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}
       - run: pip3 install -r requirements.txt
       - run: python3 setup.py install
-      - run: sofiax -c /home/ubuntu/data/extract_single/config.ini -p /home/ubuntu/data/extract_single/sofia.par
+      - run: sofiax -c /home/ubuntu/data/database_write/config.ini -p /home/ubuntu/data/database_write/sofia.par
 
       # store database query in file
       - name: Check database content
@@ -34,11 +34,23 @@ jobs:
           sh /home/ubuntu/scripts/test_case_output.sh
 
       # compare database content and cleanup
-      - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/extract_single/reference_detection_count || exit 1
-      - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/extract_single/reference_detection_output  || exit 1
-      - run: sh /home/ubuntu/scripts/cleanup.sh
+      - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/database_write/reference_detection_count || exit 1
+      - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/database_write/reference_detection_output  || exit 1
+      - run: |
+        psql -h localhost -d sofiadb << EOF
+          DELETE FROM wallaby.products;
+          DELETE FROM wallaby.detection;
+          DELETE FROM wallaby.sources;
+          DELETE FROM wallaby.instance;
+          DELETE FROM wallaby.run;
+
+          DELETE FROM wallaby.comments;
+          DELETE FROM wallaby.tag_detection;
+          DELETE FROM wallaby.tag;
+        EOF
 
   # Run SoFiAX as a wrapper for SoFiA
+  # Ensure there are no errors.
   wrapper_single:
     runs-on: self-hosted
     steps:
@@ -58,14 +70,5 @@ jobs:
       - run: python3 setup.py install
       - run: sofiax -c /home/ubuntu/data/wrapper_single/config.ini -p /home/ubuntu/data/wrapper_single/sofia.par
 
-      # store database query in file
-      - name: Check database content
-        env:
-          PGPASSWORD: ${{ secrets.PGPASSWORD }}
-        run: |
-          sh /home/ubuntu/scripts/test_case_output.sh
-
-      # compare database content and cleanup
-      - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/wrapper_single/reference_detection_count || exit 1
-      - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/wrapper_single/reference_detection_output  || exit 1
-      - run: sh /home/ubuntu/scripts/cleanup.sh
+  # Run SoFiAX as a wrapper for SoFiA with multiple processes for different regions
+  # Ensure there are no errors.
