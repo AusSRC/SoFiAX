@@ -1,28 +1,15 @@
+# Functional tests for SoFiAX
+# Ensures that execution will run successfully and write the correct information
+# to the database.
+
 name: Functional tests
 on: [push]
 jobs:
-  # setup:
-    # runs-on: self-hosted
-    # steps:
-    #   - uses: actions/checkout@v2
-    #   - uses: actions/setup-python@v2
-    #     with:
-    #       python-version: '3.8.0'
-    #       architecture: 'x64'
-    #   - name: Cache pip
-    #     uses: actions/cache@v2
-    #     with:
-    #       path: ~/.cache/pip
-    #       key: ${{ runner.os }}-build-${{ env.cache-name }}
-    #       restore-keys: |
-    #         ${{ runner.os }}-build-${{ env.cache-name }}
-    #   - run: pip3 install -r requirements.txt
-    #   - run: python3 setup.py install
-
-  test_case:
+  # Run SoFiAX just to write an existing output from SoFiA
+  # to the database
+  extract_single:  
     runs-on: self-hosted
     steps:
-      # install and run sofiax 
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
@@ -37,8 +24,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}
       - run: pip3 install -r requirements.txt
       - run: python3 setup.py install
-      - run: cp -r /home/ubuntu/data/test_case test_case
-      - run: sofiax -c test_case/config.ini -p test_case/sofia.par
+      - run: sofiax -c /home/ubuntu/data/extract_single/config.ini -p /home/ubuntu/data/extract_single/sofia.par
 
       # store database query in file
       - name: Check database content
@@ -48,6 +34,38 @@ jobs:
           sh /home/ubuntu/scripts/test_case_output.sh
 
       # compare database content and cleanup
-      - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/test_case/reference_detection_count || exit 1
-      - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/test_case/reference_detection_output  || exit 1
+      - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/extract_single/reference_detection_count || exit 1
+      - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/extract_single/reference_detection_output  || exit 1
+      - run: sh /home/ubuntu/scripts/cleanup.sh
+
+  # Run SoFiAX as a wrapper for SoFiA
+  wrapper_single:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.0'
+          architecture: 'x64'
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}
+      - run: pip3 install -r requirements.txt
+      - run: python3 setup.py install
+      - run: sofiax -c /home/ubuntu/data/wrapper_single/config.ini -p /home/ubuntu/data/wrapper_single/sofia.par
+
+      # store database query in file
+      - name: Check database content
+        env:
+          PGPASSWORD: ${{ secrets.PGPASSWORD }}
+        run: |
+          sh /home/ubuntu/scripts/test_case_output.sh
+
+      # compare database content and cleanup
+      - run: cmp $HOME/scripts/test_case_detection_count $HOME/data/wrapper_single/reference_detection_count || exit 1
+      - run: cmp $HOME/scripts/test_case_detection_output $HOME/data/wrapper_single/reference_detection_output  || exit 1
       - run: sh /home/ubuntu/scripts/cleanup.sh
