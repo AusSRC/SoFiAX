@@ -6,14 +6,12 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      - 
-        name: Checkout
-        uses: actions/checkout@v2
       - name: Build the Docker image
+        uses: actions/checkout@v2
         with:
             username: ${{ secrets.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
+      - run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin docker.io
           docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofiax:latest
           docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofiax:latest
