@@ -3,7 +3,6 @@ An [AusSRC](https://aussrc.org/) Project.
 
 [![Functional tests](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml)
 [![Docker latest](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-latest.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-latest.yml)
-[![Docker release](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-release.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-release.yml)
 
 ## Description
 
