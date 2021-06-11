@@ -1,9 +1,9 @@
-name: push-docker-build
+name: Docker build latest
 
 on: [push]
 
 jobs:
-  docker:
+  docker-build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Build the Docker image
