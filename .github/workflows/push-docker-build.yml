@@ -7,8 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - 
-        name: Build the Docker image
+        name: Checkout
         uses: actions/checkout@v2
+      - name: Build the Docker image
         with:
             username: ${{ secrets.DOCKERHUB_USERNAME }}
             password: ${{ secrets.DOCKERHUB_TOKEN }}
