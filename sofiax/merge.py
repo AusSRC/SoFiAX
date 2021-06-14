@@ -38,6 +38,9 @@ from sofiax.db import db_run_upsert, db_instance_upsert, \
 async def _get_file_bytes(path: str, mode: str = 'rb'):
     buffer = []
 
+    if not os.path.isfile(path):
+        return b''
+
     async with aiofiles.open(path, mode) as f:
         while True:
             buff = await f.read()
@@ -201,7 +204,8 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         mom0_bytes = await _get_file_bytes(f"{base}_mom0.fits")
         mom1_bytes = await _get_file_bytes(f"{base}_mom1.fits")
         mom2_bytes = await _get_file_bytes(f"{base}_mom2.fits")
-        chan_bytes = await _get_file_bytes(f"{base}_chan.fits")
+        # NOTE: cubelet _chan.fits files renames _snr.fits in SoFiA-2 v2.3
+        chan_bytes = await _get_file_bytes(f"{base}_snr.fits")
         spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
 
         async with conn.transaction():
