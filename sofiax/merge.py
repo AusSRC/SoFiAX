@@ -51,7 +51,8 @@ async def _get_file_bytes(path: str, mode: str = 'rb'):
 
 
 async def parse_sofia_param_file(sofia_param_path: str):
-    file_contents = f"[dummy_section]\n{await _get_file_bytes(sofia_param_path, mode='r')}"
+    content = await _get_file_bytes(sofia_param_path, mode='r')
+    file_contents = f"[dummy_section]\n{content}"
 
     params = {}
     config = configparser.RawConfigParser()
@@ -86,7 +87,8 @@ async def remove_output(params: dict, cwd: str):
     await loop.run_in_executor(None, remove_files, path)
 
 
-def sanity_check(flux: tuple, spatial_extent: tuple, spectral_extent: tuple, sanity_thresholds: dict):
+def sanity_check(flux: tuple, spatial_extent: tuple,
+                 spectral_extent: tuple, sanity_thresholds: dict):
     f1, f2 = flux
     diff = abs(f1 - f2) * 100 / ((abs(f1) + abs(f2)) / 2)
     # gone beyond the % tolerance
@@ -155,7 +157,9 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
             break
 
     instance.run_date = datetime.strptime(run_date, '%a, %d %b %Y, %H:%M:%S')
-    instance.reliability_plot = await _get_file_bytes(f"{output_dir}/{output_filename}_rel.eps")
+    instance.reliability_plot = await _get_file_bytes(
+        f"{output_dir}/{output_filename}_rel.eps"
+    )
 
     instance = await db_instance_upsert(conn, instance)
 
@@ -190,31 +194,35 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         detect_dict['y'] = detect_dict['y'] + instance.boundary[2]
         detect_dict['z'] = detect_dict['z'] + instance.boundary[4]
 
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_cube.fits"
-        cube_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mask.fits"
-        mask_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mom0.fits"
-        mom0_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mom1.fits"
-        mom1_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_mom2.fits"
-        mom2_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_chan.fits"
-        chan_bytes = await _get_file_bytes(path)
-        path = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}_spec.txt"
-        spec_bytes = await _get_file_bytes(path)
+        base = f"{output_dir}/{output_filename}_cubelets/\
+            {output_filename}_{detect_id}"
+
+        cube_bytes = await _get_file_bytes(f"{base}_cube.fits")
+        mask_bytes = await _get_file_bytes(f"{base}_mask.fits")
+        mom0_bytes = await _get_file_bytes(f"{base}_mom0.fits")
+        mom1_bytes = await _get_file_bytes(f"{base}_mom1.fits")
+        mom2_bytes = await _get_file_bytes(f"{base}_mom2.fits")
+        chan_bytes = await _get_file_bytes(f"{base}_chan.fits")
+        spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
 
         async with conn.transaction():
-            result = await db_source_match(conn, run.run_id, detect_dict, run.sanity_thresholds['uncertainty_sigma'])
+            result = await db_source_match(
+                conn, run.run_id, detect_dict,
+                run.sanity_thresholds['uncertainty_sigma']
+            )
             result_len = len(result)
             if result_len == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
-                await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
-                                          cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                                          mom2_bytes, chan_bytes, spec_bytes)
+                await db_detection_insert(
+                    conn, run.run_id, instance.instance_id, detect_dict,
+                    cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
+                    mom2_bytes, chan_bytes, spec_bytes
+                )
             else:
-                logging.info(f"Duplicates, Name: {detect_dict['name']} Details: {result_len} hit(s)")
+                logging.info(
+                    f"Duplicates, Name: {detect_dict['name']} \
+                    Details: {result_len} hit(s)"
+                )
                 resolved = False
                 for db_detect in result:
                     flux = (detect_dict['f_sum'], db_detect['f_sum'])
@@ -222,35 +230,58 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                                detect_dict['ell_min'], db_detect['ell_min'])
                     spectral = (detect_dict['w20'], db_detect['w20'],
                                 detect_dict['w50'], db_detect['w50'])
-                    check_result = sanity_check(flux, spatial, spectral, run.sanity_thresholds)
+                    check_result = sanity_check(
+                        flux, spatial, spectral, run.sanity_thresholds
+                    )
                     if check_result:
                         detect_flag = detect_dict['flag']
                         db_detect_flag = db_detect['flag']
                         if detect_flag == 0 and db_detect_flag == 4:
-                            logging.info(f"Replacing, Name: {detect_dict['name']} Details: flag 4 with flag 0")
+                            logging.info(
+                                f"Replacing, Name: {detect_dict['name']} \
+                                Details: flag 4 with flag 0"
+                            )
                             await db_delete_detection(conn, db_detect['id'])
-                            await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict, cube_bytes,
-                                                      mask_bytes, mom0_bytes, mom1_bytes,
-                                                      mom2_bytes, chan_bytes, spec_bytes,
-                                                      db_detect['unresolved'])
-                        elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:
+                            await db_detection_insert(
+                                conn, run.run_id, instance.instance_id,
+                                detect_dict, cube_bytes, mask_bytes,
+                                mom0_bytes, mom1_bytes, mom2_bytes,
+                                chan_bytes, spec_bytes, db_detect['unresolved']
+                            )
+                        elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:  # noqa
                             if bool(random.getrandbits(1)) is True:
-                                logging.info(f"Replacing, Name: {detect_dict['name']} Details: flag 0 with "
-                                             f"flag 0 or flag 4 with flag 4")
-                                await db_delete_detection(conn, db_detect['id'])
-                                await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
-                                                          cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                                                          mom2_bytes, chan_bytes, spec_bytes,
-                                                          db_detect['unresolved'])
+                                logging.info(
+                                    f"Replacing, Name: {detect_dict['name']} \
+                                    Details: flag 0 with flag 0 or \
+                                    flag 4 with flag 4"
+                                )
+                                await db_delete_detection(
+                                    conn, db_detect['id']
+                                )
+                                await db_detection_insert(
+                                    conn, run.run_id, instance.instance_id,
+                                    detect_dict, cube_bytes, mask_bytes,
+                                    mom0_bytes, mom1_bytes, mom2_bytes,
+                                    chan_bytes, spec_bytes,
+                                    db_detect['unresolved']
+                                )
                         resolved = True
                         break
                 if resolved is False:
-                    logging.info(f"Not Resolved, Name: {detect_dict['name']} Details: Setting to unresolved")
-                    await db_detection_insert(conn, run.run_id, instance.instance_id, detect_dict,
-                                              cube_bytes, mask_bytes, mom0_bytes,
-                                              mom1_bytes, mom2_bytes, chan_bytes, spec_bytes,
-                                              True)
-                    await db_update_detection_unresolved(conn, True, [i['id'] for i in result])
+                    logging.info(
+                        f"Not Resolved, Name: {detect_dict['name']}\
+                        Details: Setting to unresolved"
+                    )
+                    await db_detection_insert(
+                        conn, run.run_id, instance.instance_id, detect_dict,
+                        cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
+                        mom2_bytes, chan_bytes, spec_bytes, True
+                    )
+                    await db_update_detection_unresolved(
+                        conn,
+                        True,
+                        [i['id'] for i in result]
+                    )
 
 
 async def run_merge(config, run_name, param_list, sanity):
@@ -282,12 +313,19 @@ async def run_merge(config, run_name, param_list, sanity):
 
         run_date = datetime.now()
 
-        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
+        conn = await asyncpg.connect(
+            user=username,
+            password=password,
+            database=name,
+            host=host
+        )
         try:
             run = Run(run_name, sanity)
             run = await db_run_upsert(conn, run)
-            instance = Instance(run.run_id, run_date, output_filename, boundary, None, None, None,
-                                params, None, None, None, None)
+            instance = Instance(
+                run.run_id, run_date, output_filename, boundary, None, None,
+                None, params, None, None, None, None
+            )
             instance = await db_instance_upsert(conn, instance)
         finally:
             await conn.close()
@@ -308,13 +346,19 @@ async def run_merge(config, run_name, param_list, sanity):
             instance.stderr = stderr
             instance.return_code = proc.returncode
 
-        conn = await asyncpg.connect(user=username, password=password, database=name, host=host)
+        conn = await asyncpg.connect(
+            user=username,
+            password=password,
+            database=name,
+            host=host
+        )
         try:
             if instance.return_code == 0 or instance.return_code is None:
                 logging.info(f'Sofia completed: {param_path}')
                 await match_merge_detections(conn, run, instance, param_cwd)
             else:
-                err = f'Sofia completed with return code: {instance.return_code}'
+                code = instance.return_code
+                err = f'Sofia completed with return code: {code}'
                 await db_instance_upsert(conn, instance)
 
                 logging.error(err)

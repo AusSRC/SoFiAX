@@ -33,16 +33,29 @@ async def _main():
 
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
     handler.setFormatter(formatter)
     root.addHandler(handler)
 
     parser = argparse.ArgumentParser(description='Sofia standalone execution.')
 
-    parser.add_argument('-c', '--conf', dest='conf', required=True,
-                        help='configuration file')
-    parser.add_argument('-p', '--param', dest='param', nargs='+', required=True,
-                        help='sofia parameter file')
+    parser.add_argument(
+        '-c',
+        '--conf',
+        dest='conf',
+        required=True,
+        help='configuration file'
+    )
+    parser.add_argument(
+        '-p',
+        '--param',
+        dest='param',
+        nargs='+',
+        required=True,
+        help='sofia parameter file'
+    )
 
     args = parser.parse_args()
 
@@ -84,8 +97,11 @@ async def _main():
 
     Run.check_inputs(sanity)
 
-    task_list = [asyncio.create_task(run_merge(config, run_name, args.param, sanity))
-                 for _ in range(int(processes))]
+    task_list = [
+        asyncio.create_task(
+            run_merge(config, run_name, args.param, sanity)
+        ) for _ in range(int(processes))
+    ]
 
     try:
         await asyncio.gather(*task_list)
