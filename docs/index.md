@@ -1,22 +1,3 @@
-<!--
-Copyright (c) 2021 AusSRC.
-
-This file is part of SoFiAX 
-(see https://github.com/AusSRC/SoFiAX).
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 2.1 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.-->
-
 ## SoFiAX
 
 **So**urce **Fi**nding **A**pplication e**X**ectuor
@@ -147,3 +128,14 @@ To verify the installation of SoFiAX and SoFiA are successful you can download t
 
 and run SoFiAX. There is a reference database output that you can compare with the output for your run.
 
+Your command line output for a successful run of SoFiAX will be
+
+```
+$ sofiax -c test_case/config.ini -p test_case/sofia.par
+
+2021-06-14 04:10:46,806 - root - INFO - Processing test_case/sofia.par
+2021-06-14 04:10:47,008 - root - INFO - Sofia completed: test_case/sofia.par
+2021-06-14 04:10:47,143 - root - INFO - No duplicates, Name: SoFiA J120120.94+615351.3
+2021-06-14 04:10:47,275 - root - INFO - No duplicates, Name: SoFiA J120215.81+620729.5
+2021-06-14 04:10:47,421 - root - INFO - No duplicates, Name: SoFiA J120142.94+621931.7
+```
