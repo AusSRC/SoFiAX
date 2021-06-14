@@ -194,8 +194,7 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         detect_dict['y'] = detect_dict['y'] + instance.boundary[2]
         detect_dict['z'] = detect_dict['z'] + instance.boundary[4]
 
-        base = f"{output_dir}/{output_filename}_cubelets/\
-            {output_filename}_{detect_id}"
+        base = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}"  # noqa
 
         cube_bytes = await _get_file_bytes(f"{base}_cube.fits")
         mask_bytes = await _get_file_bytes(f"{base}_mask.fits")
