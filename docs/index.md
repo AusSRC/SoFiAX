@@ -1,37 +1,128 @@
-## Welcome to GitHub Pages
+## SoFiAX
 
-You can use the [editor on GitHub](https://github.com/AusSRC/SoFiAX/edit/master/docs/index.md) to maintain and preview the content for your website in Markdown files.
+**So**urce **Fi**nding **A**pplication e**X**ectuor
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+An [AusSRC](https://aussrc.org/) project.
 
-### Markdown
+A Python wrapper for executing [SoFiA](https://github.com/SoFiA-Admin/SoFiA-2) and automatically merging, resolving and inserting output products to a selected PostgreSQL database. Sources that cannot be resolved automatically will be flagged for manual inspection, which can be done by users through SoFiAX's web portal ([SoFiAX_services](https://github.com/AusSRC/SoFiAX_services)). 
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Written by AusSRC software research engineers for WALLABY project scientists who are running SoFiA.
 
-```markdown
-Syntax highlighted code block
+## Usage
 
-# Header 1
-## Header 2
-### Header 3
+SoFiAX can either be run 
 
-- Bulleted
-- List
+### Installation
 
-1. Numbered
-2. List
+The installation of SoFiAX requires `python3.8` or greater. You can check the installed version on your machine with `python --version`. SoFiAX can be run with and without an installation of SoFiA. This is specified in the configuration file.
 
-**Bold** and _Italic_ and `Code` text
+#### With `sofia`
 
-[Link](url) and ![Image](src)
+SoFiAX is intended to be a wrapper around SoFiA. To use it in this way you will need SoFiA installed on your machine. The instructions below show how both SoFiA and SoFiAX can be installed.
+
+```
+git clone https://github.com/SoFiA-Admin/SoFiA-2
+cd SoFiA-2
+./compile.sh
+
+git clone https://github.com/ICRAR/SoFiAX
+cd SoFiAX
+python3 -m venv env
+source env/bin/activate
+python setup.py install
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+#### Without `sofia`
 
-### Jekyll Themes
+SoFiAX can be run without a local SoFiA installation to write data outputted from a SoFiA execution to a database of your choosing. 
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/AusSRC/SoFiAX/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+```
+git clone https://github.com/ICRAR/SoFiAX
+cd SoFiAX
+python3 -m venv env
+source env/bin/activate
+python setup.py install
+```
 
-### Support or Contact
+### Execution
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+There are scripts are available for generating this configuration file automatically from the image cube of interest. See: [https://github.com/SoFiA-Admin/s2p_setup](https://github.com/SoFiA-Admin/s2p_setup)
+
+#### Locally
+
+```
+sofiax -c config.ini -p sofia.par
+```
+
+#### Docker
+
+We have an [official Docker image](https://hub.docker.com/r/aussrc/sofiax) for the AusSRC SoFiAX application. 
+
+```
+docker pull aussrc/sofiax
+docker run sofiax -c config.ini -p sofia.par
+```
+
+#### Slurm
+
+TBA
+
+### Configuration
+
+The SoFiAX configuration is set in the `config.ini` file. The file contains all of the SoFiAX-specific information. Other information required to run `sofiax` is contained in the `sofia.par` file.
+
+#### config.ini
+
+##### Template
+
+```
+[SoFiAX]
+db_hostname=
+db_name=
+db_username=
+db_password=
+
+sofia_execute=0
+sofia_path=/<path>/sofia
+sofia_processes=1
+
+run_name = Test
+spatial_extent = 5, 5
+spectral_extent = 5, 5
+flux = 5
+uncertainty_sigma = 5
+```
+
+##### Descriptions
+
+| Parameter | Description  |
+--- | --- |
+| `db_hostname` | Host address for the database that you wish to write the SoFiA output products to. |
+| `db_name` | Name of the database. |
+| `db_username` | Username for a user to access to specified database. |
+| `db_password` | Password for a user to access to specified database. |
+| `sofia_execute` | Whether or not to execute `sofia`. `1` will launch `sofia` as part of `sofiax`, or `0` to run `sofiax` on existing output products |
+| `sofia_path` | Only required if `sofiax_execute=1`. Path to the `sofia` executable in the execution environment. |
+| `sofia_processes` | Only required if `sofia_execute=1`. Number of processes across which to execute `sofia`. |
+| `run_name` | Name of the run, used to identify the products in the database. |
+| `spatial_extent ` | SoFiA attribute |
+| `spectral_extent` | SoFiA attribute |
+| `flux` | SoFiA attribute |
+| `uncertainty_sigma` | SoFiA attribute |
+
+#### sofia.par
+
+The `sofia.par` file allows the user to customise the run of `sofia`. This file is required even if `sofia_execute=0` as the location of output files is contained in this parameter file. This codebase is maintained by the WALLABY science team, and the relavant links are:
+
+* [Repository](https://github.com/SoFiA-Admin/SoFiA-2)
+* [Official wiki](https://github.com/SoFiA-Admin/SoFiA-2/wiki)
+* [Description of parameters](https://github.com/SoFiA-Admin/SoFiA-2/wiki/SoFiA-2-Control-Parameters)
+
+### Test
+
+To verify the installation of SoFiAX and SoFiA are successful you can download the test data cube here
+
+* [SoFiA test data cube](https://github.com/SoFiA-Admin/SoFiA-2/wiki/documents/sofia_test_datacube.tar.gz) (14.2 MB)
+
+and run SoFiAX. There is a reference database output that you can compare with the output for your run.
+
