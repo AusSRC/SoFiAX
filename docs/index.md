@@ -65,7 +65,9 @@ docker run sofiax -c config.ini -p sofia.par
 
 #### Slurm
 
-TBA
+To run SoFiAX on a Slurm cluster you will need the `sofia.par` and `config.ini` files. We recommend you utilise the [`s2p_setup`](https://github.com/SoFiA-Admin/s2p_setup) code for generating the approriate configuration files for the data cube of interest.
+
+This `s2p_setup` repository generates a `run_sofiax.sh` file that can be run from the Slurm head node.
 
 ### Configuration
 
