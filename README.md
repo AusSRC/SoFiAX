@@ -1,3 +1,22 @@
+<!--
+Copyright (c) 2021 AusSRC.
+
+This file is part of SoFiAX 
+(see https://github.com/AusSRC/SoFiAX).
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 2.1 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program. If not, see <http://www.gnu.org/licenses/>.-->
+
 # SoFiAX
 An [AusSRC](https://aussrc.org/) Project.
 
@@ -8,18 +27,6 @@ An [AusSRC](https://aussrc.org/) Project.
 ## Description
 
 This project extends the capability of the [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2 "SoFiA-2") source finding application for H1 sources by executing and automatically merging, resolving and inserting extracted sources into a database for further inspection and analysis. If there any source conflicts which can not be resolved, the user is invited to resolve them manually through SoFiAX's web portal. 
-
-## Current Science Projects
-   * TAP/ADQL + Datalink service: 
-     * WALLABY: https://wallaby.aussrc.org/tap
-     * DINGO: https://dingo.aussrc.org/tap
-     
-   * Admin Console: 
-      * WALLABY: https://wallaby.aussrc.org
-      * DINGO: https://dingo.aussrc.org
-
-## Service Source Code
-Source code for SoFiAX database, TAP service and Admin Console can be found in the [SoFiAX_services repository](https://github.com/AusSRC/SoFiAX_services "SoFiAX_services")
 
 ## Installation
 
@@ -141,3 +148,17 @@ do
     sbatch ./sofia.sh /<config file path>/config.ini /<sofia par dir>/sofia_$i.par
 done
 ```
+
+## Services
+
+Source code for SoFiAX database, TAP service and Admin Console can be found in the [SoFiAX_services repository](https://github.com/AusSRC/SoFiAX_services "SoFiAX_services")
+
+### Current Science Projects
+
+* TAP/ADQL + Datalink service: 
+  * WALLABY: https://wallaby.aussrc.org/tap
+  * DINGO: https://dingo.aussrc.org/tap
+  
+* Admin Console: 
+  * WALLABY: https://wallaby.aussrc.org
+  * DINGO: https://dingo.aussrc.org
