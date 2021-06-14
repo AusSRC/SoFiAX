@@ -175,14 +175,20 @@ async def db_instance_upsert(conn, instance: Instance):
             return_code=EXCLUDED.return_code,  \
             stdout=EXCLUDED.stdout,  \
             stderr=EXCLUDED.stderr  \
-        RETURNING \
-            id instance.run_id, instance.run_date, \
-            instance.filename, instance.boundary, \
-            instance.flag_log, instance.reliability_plot, \
-            instance.log, json.dumps(instance.params), \
-            instance.version, instance.return_code, \
-            instance.stdout, instance.stderr'
-        )
+        RETURNING id',
+        instance.run_id,
+        instance.run_date,
+        instance.filename,
+        instance.boundary,
+        instance.flag_log,
+        instance.reliability_plot,
+        instance.log,
+        json.dumps(instance.params),
+        instance.version,
+        instance.return_code,
+        instance.stdout,
+        instance.stderr
+    )
     instance.instance_id = ins_id[0]
     return instance
 
