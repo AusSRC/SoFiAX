@@ -10,8 +10,6 @@ Written by AusSRC software research engineers for WALLABY project scientists who
 
 ## Usage
 
-SoFiAX can either be run 
-
 ### Installation
 
 The installation of SoFiAX requires `python3.8` or greater. You can check the installed version on your machine with `python --version`. SoFiAX can be run with and without an installation of SoFiA. This is specified in the configuration file.
