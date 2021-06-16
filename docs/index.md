@@ -122,7 +122,7 @@ The `sofia.par` file allows the user to customise the run of `sofia`. This file 
 
 To verify the installation of SoFiAX is successful you can download and run SoFiAX on the test case. Download the files:
 
-* [SoFiAX test case]() (123.9 MB)
+* [SoFiAX test case](https://sofiax-test-case.s3.ap-southeast-2.amazonaws.com/sofiax_test_case.tar.gz) (120.2 MB)
 
 First step is to extract the contents of the file:
 
