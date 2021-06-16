@@ -120,11 +120,31 @@ The `sofia.par` file allows the user to customise the run of `sofia`. This file 
 
 ### Test
 
-To verify the installation of SoFiAX and SoFiA are successful you can download the test data cube here
+To verify the installation of SoFiAX is successful you can download and run SoFiAX on the test case. Download the files:
 
-* [SoFiA test data cube](https://github.com/SoFiA-Admin/SoFiA-2/wiki/documents/sofia_test_datacube.tar.gz) (14.2 MB)
+* [SoFiAX test case]() (123.9 MB)
 
-and run SoFiAX. There is a reference database output that you can compare with the output for your run.
+First step is to extract the contents of the file:
+
+```
+tar -xzvf sofia_test_case.tar.gz
+```
+
+This should create a folder called `sofiax_test_case`. Now you will need a PostgreSQL database with the correct schema installed, which can be done via our initalisation script in this [SoFiAX_services repository](https://github.com/AusSRC/SoFiAX_services/tree/main/db). You will also need to update the SoFiAX `config.ini` file with the credentials for your database
+
+```
+[SoFiAX]
+db_hostname = <your_hostname>
+db_name = <your_db_name>
+db_username = <your_username>
+db_password = <your_password>
+```
+
+Once you have a database with the correct schema, updated the `config.ini` file with the credentials and installed SoFiAX, you are ready to test that it runs correctly. Run the following command
+
+```
+sofiax -c sofiax_test_case/config.ini -p sofiax_test_case/sofia_058.par
+```
 
 Your command line output for a successful run of SoFiAX will be
 
@@ -136,4 +156,5 @@ $ sofiax -c test_case/config.ini -p test_case/sofia.par
 2021-06-14 04:10:47,143 - root - INFO - No duplicates, Name: SoFiA J120120.94+615351.3
 2021-06-14 04:10:47,275 - root - INFO - No duplicates, Name: SoFiA J120215.81+620729.5
 2021-06-14 04:10:47,421 - root - INFO - No duplicates, Name: SoFiA J120142.94+621931.7
+...
 ```
