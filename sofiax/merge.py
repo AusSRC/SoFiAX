@@ -275,15 +275,20 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                         f"Not Resolved, Name: {detect_dict['name']}\
                         Details: Setting to unresolved"
                     )
-                    await db_detection_insert(
+                    # Create tasks that are awaited upon together
+                    insert_task = db_detection_insert(
                         conn, run.run_id, instance.instance_id, detect_dict,
                         cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                         mom2_bytes, chan_bytes, spec_bytes, True
                     )
-                    await db_update_detection_unresolved(
+                    update_detection_task = db_update_detection_unresolved(
                         conn,
                         True,
                         [i['id'] for i in result]
+                    )
+                    await asyncio.gather(
+                        insert_task,
+                        update_detection_task
                     )
 
 
@@ -316,6 +321,7 @@ async def run_merge(config, run_name, param_list, sanity):
 
         run_date = datetime.now()
 
+        # Write run and instance to database
         conn = await asyncpg.connect(
             user=username,
             password=password,
@@ -333,6 +339,7 @@ async def run_merge(config, run_name, param_list, sanity):
         finally:
             await conn.close()
 
+        # Execute sofia (if applicable)
         if execute == 1:
             logging.info(f'Executing Sofia {param_path}')
 
@@ -349,6 +356,7 @@ async def run_merge(config, run_name, param_list, sanity):
             instance.stderr = stderr
             instance.return_code = proc.returncode
 
+        # Write detections to database
         conn = await asyncpg.connect(
             user=username,
             password=password,
@@ -372,6 +380,5 @@ async def run_merge(config, run_name, param_list, sanity):
                     return
 
                 raise SystemError(err)
-
         finally:
             await conn.close()
