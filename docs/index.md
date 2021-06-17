@@ -130,7 +130,14 @@ First step is to extract the contents of the file:
 tar -xzvf sofia_test_case.tar.gz
 ```
 
-This should create a folder called `sofiax_test_case`. Now you will need a PostgreSQL database with the correct schema installed, which can be done via our initalisation script in this [SoFiAX_services repository](https://github.com/AusSRC/SoFiAX_services/tree/main/db). You will also need to update the SoFiAX `config.ini` file with the credentials for your database
+This should create a folder called `sofiax_test_case`. Now you will need a PostgreSQL database with the correct schema installed, which can be done via our initalisation script in this [SoFiAX_services repository](https://github.com/AusSRC/SoFiAX_services/tree/main/db). You can use the `Dockerfile` and `docker-compose.yml` file in the repository to create the database instance on your local machine with the following commands from inside [SoFiAX_services/db](https://github.com/AusSRC/SoFiAX_services/tree/main/db)
+
+```
+docker build -t sofiax_db .
+docker-compose up
+```
+
+You will also need to update the SoFiAX `config.ini` file with the credentials for your database
 
 ```
 [SoFiAX]
@@ -140,7 +147,7 @@ db_username = <your_username>
 db_password = <your_password>
 ```
 
-Once you have a database with the correct schema, updated the `config.ini` file with the credentials and installed SoFiAX, you are ready to test that it runs correctly. Run the following command
+Once you have access to a PostgreSQL database with the correct schema, updated the `config.ini` file with the credentials and installed SoFiAX, you are ready to test that it runs correctly. Run the following command
 
 ```
 sofiax -c sofiax_test_case/config.ini -p sofiax_test_case/sofia_058.par
