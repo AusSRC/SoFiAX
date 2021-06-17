@@ -77,6 +77,3 @@ jobs:
       - run: pip3 install -r requirements.txt
       - run: python3 setup.py install
       - run: sofiax -c /home/ubuntu/data/wrapper_single/config.ini -p /home/ubuntu/data/wrapper_single/sofia.par
-
-  # Run SoFiAX as a wrapper for SoFiA with multiple processes for different regions
-  # Ensure there are no errors.
