@@ -41,5 +41,5 @@ jobs:
       - 
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin docker.io
-          docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofiax:$RELEASE_VERSION
+          docker build . --no-cache --file Dockerfile --tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofiax:$RELEASE_VERSION
           docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofiax:$RELEASE_VERSION
