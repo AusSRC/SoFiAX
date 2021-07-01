@@ -127,7 +127,10 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
 
 
 async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
+    """The database connection remains open for the duration of this
+    process of merging and matching detections.
 
+    """
     input_fits = instance.params['input.data']
     output_dir = instance.params['output.directory']
 
@@ -275,20 +278,15 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                         f"Not Resolved, Name: {detect_dict['name']}\
                         Details: Setting to unresolved"
                     )
-                    # Create tasks that are awaited upon together
-                    insert_task = db_detection_insert(
+                    await db_detection_insert(
                         conn, run.run_id, instance.instance_id, detect_dict,
                         cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                         mom2_bytes, chan_bytes, spec_bytes, True
                     )
-                    update_detection_task = db_update_detection_unresolved(
+                    await db_update_detection_unresolved(
                         conn,
                         True,
                         [i['id'] for i in result]
-                    )
-                    await asyncio.gather(
-                        insert_task,
-                        update_detection_task
                     )
 
 
