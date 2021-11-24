@@ -6,8 +6,6 @@ An [AusSRC](https://aussrc.org/) project.
 
 A Python wrapper for executing [SoFiA](https://github.com/SoFiA-Admin/SoFiA-2) and automatically merging, resolving and inserting output products to a selected PostgreSQL database. Sources that cannot be resolved automatically will be flagged for manual inspection, which can be done by users through SoFiAX's web portal ([SoFiAX_services](https://github.com/AusSRC/SoFiAX_services)). 
 
-Written by AusSRC software research engineers for WALLABY project scientists who are running SoFiA.
-
 ## Usage
 
 ### Installation
@@ -112,7 +110,7 @@ uncertainty_sigma = 5
 
 #### sofia.par
 
-The `sofia.par` file allows the user to customise the run of `sofia`. This file is required even if `sofia_execute=0` as the location of output files is contained in this parameter file. This codebase is maintained by the WALLABY science team, and the relavant links are:
+The `sofia.par` file allows the user to customise the run of `sofia`. This file is required even if `sofia_execute=0` as the location of output files is contained in this parameter file. The relavant links are:
 
 * [Repository](https://github.com/SoFiA-Admin/SoFiA-2)
 * [Official wiki](https://github.com/SoFiA-Admin/SoFiA-2/wiki)

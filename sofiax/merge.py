@@ -291,14 +291,13 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
 
 
 async def run_merge(config, run_name, param_list, sanity):
-    conf = config['SoFiAX']
-    host = conf['db_hostname']
-    name = conf['db_name']
-    username = conf['db_username']
-    password = conf['db_password']
+    host = config['db_hostname']
+    name = config['db_name']
+    username = config['db_username']
+    password = config['db_password']
 
-    execute = int(conf['sofia_execute'])
-    path = conf['sofia_path']
+    execute = int(config['sofia_execute'])
+    path = config['sofia_path']
 
     while len(param_list) > 0:
         param_path = param_list.pop(0)

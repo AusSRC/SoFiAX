@@ -57,7 +57,20 @@ class Const(object):
         "err_z": None,
         "err_f_sum": None,
         "freq": None,
-        "flag": None
+        "flag": None,
+        "unresolved": None,
+        "wm50": None,
+        "x_peak": None,
+        "y_peak": None,
+        "z_peak": None,
+        "ra_peak": None,
+        "dec_peak": None,
+        "freq_peak": None,
+        "l_peak": None,
+        "b_peak": None,
+        "v_rad_peak": None,
+        "v_opt_peak": None,
+        "v_app_peak": None
     }
 
     VO_DATALINK_URL = 'https://wallaby.aussrc.org/wallaby/vo/dl/dlmeta?ID='
@@ -246,9 +259,9 @@ async def db_source_match(conn, run_id: int,
 async def db_detection_product_insert(conn, detection_id, cube, mask,
                                       mom0, mom1, mom2, chan, spec):
     product_id = await conn.fetchrow(
-        'INSERT INTO wallaby.products \
-            (detection_id, cube, mask, moment0, \
-            moment1, moment2, channels, spectrum) \
+        'INSERT INTO wallaby.product \
+            (detection_id, cube, mask, mom0, \
+            mom1, mom2, chan, spec) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8) \
         ON CONFLICT (detection_id) \
         DO UPDATE SET detection_id=EXCLUDED.detection_id \
@@ -286,12 +299,15 @@ async def db_detection_insert(conn, run_id: int, instance_id: int,
             y_min, y_max, z_min, z_max, n_pix, f_min, f_max, f_sum, rel, \
             flag, rms, w20, w50, ell_maj, ell_min, ell_pa, ell3s_maj, \
             ell3s_min, ell3s_pa, kin_pa, err_x, err_y, err_z, err_f_sum, \
-            ra, dec, freq, l, b, v_rad, v_opt, v_app, access_url) \
+            ra, dec, freq, l, b, v_rad, v_opt, v_app, \
+            wm50, x_peak, y_peak, z_peak, ra_peak, dec_peak, \
+            freq_peak, l_peak, b_peak, v_rad_peak, v_opt_peak, v_app_peak, \
+            access_url) \
         VALUES(\
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,\
             $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,\
             $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, \
-            $42 || \
+            $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54 || \
             currval(pg_get_serial_sequence(\'wallaby.detection\', \'id\'))) \
         ON CONFLICT (\
             name, x, y, z, x_min, x_max, y_min, y_max, z_min, z_max, \
@@ -312,7 +328,12 @@ async def db_detection_insert(conn, run_id: int, instance_id: int,
         detection['err_y'], detection['err_z'], detection['err_f_sum'],
         detection['ra'], detection['dec'], detection['freq'], detection['l'],
         detection['b'], detection['v_rad'], detection['v_opt'],
-        detection['v_app'], Const.VO_DATALINK_URL
+        detection['v_app'], detection['wm50'],
+        detection['x_peak'], detection['y_peak'], detection['z_peak'],
+        detection['ra_peak'], detection['dec_peak'], detection['freq_peak'],
+        detection['l_peak'], detection['b_peak'], detection['v_rad_peak'],
+        detection['v_opt_peak'], detection['v_app_peak'],
+        Const.VO_DATALINK_URL
     )
 
     await db_detection_product_insert(conn, detection_id[0], cube, mask, mom0,
