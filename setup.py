@@ -30,13 +30,12 @@ setup(
     description='SoFiAX',
     long_description=open('README.md').read(),
     install_requires=[
+        "wheel",
+        "extension-helpers",
         "aiofiles",
         "asyncpg",
         "xmltodict",
         "astropy"
     ],
     python_requires='>3.6',
-    entry_points={
-        'console_scripts': ['sofiax=sofiax.sofiax:main'],
-    }
 )

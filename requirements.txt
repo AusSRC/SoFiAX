@@ -1,3 +1,7 @@
+wheel
+extension-helpers
+astropy
+numpy
 aiofiles
 asyncpg
 xmltodict

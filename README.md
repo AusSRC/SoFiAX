@@ -58,8 +58,9 @@ First create a SoFiAX configuration file which contains a link to SoFiA-2 instan
   
   ```
   [SoFiAX]
+  db_schema=wallaby
   db_hostname=wallaby.aussrc.org
-  db_name=sofiadb
+  db_name=wallabydb
   db_username=
   db_password=
 

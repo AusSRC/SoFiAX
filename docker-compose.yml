@@ -1,0 +1,9 @@
+version: '3.5'
+
+services:
+  sofiax:
+    image: sofiax
+    container_name: sofiax
+    build:
+      context: .
+    

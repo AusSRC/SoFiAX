@@ -17,11 +17,30 @@
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.##
 
-FROM python:3.8
+FROM python:3.10
+
+RUN apt update
+RUN apt install -y wcslib-dev
+
+RUN mkdir -p /app
+RUN mkdir -p /input
+RUN mkdir -p /output
+
 WORKDIR /app
 
-RUN git clone https://github.com/AusSRC/SoFiAX.git &&\
-    cd SoFiAX &&\
-    python3 setup.py install
+RUN git clone https://github.com/SoFiA-Admin/SoFiA-2 
+WORKDIR SoFiA-2 
+RUN ./compile.sh -fopenmp
+RUN chmod +x /app/SoFiA-2/sofia
+RUN ln -s /app/SoFiA-2/sofia /usr/bin/sofia
 
-ENTRYPOINT [ "sofiax" ]
+WORKDIR /app
+
+COPY . /app/sofiax
+WORKDIR /app/sofiax
+RUN pip install -r requirements.txt
+RUN python3 setup.py install
+
+WORKDIR /app/sofiax
+
+ENTRYPOINT ["python3", "-m", "sofiax"]

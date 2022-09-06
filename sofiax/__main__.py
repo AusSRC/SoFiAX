@@ -23,9 +23,9 @@ import configparser
 import argparse
 import sys
 
-from .utils import read_config
-from .merge import run_merge
-from .db import Run, Const
+from sofiax.utils import read_config
+from sofiax.merge import run_merge
+from sofiax.db import Run, Const
 
 
 def logger():
@@ -49,6 +49,7 @@ def parse_args():
 
     """
     parser = argparse.ArgumentParser(
+        prog='SoFiAX',
         description="Sofiax standalone execution."
     )
     parser.add_argument(
@@ -92,9 +93,6 @@ async def _main():
         .replace(" ", "").split(",")
     flux = int(read_config(config, "flux"))
     uncertainty_sigma = config.get("uncertainty_sigma", 5)
-    vo_datalink_url = config.get("vo_datalink_url", None)
-    if vo_datalink_url is not None:
-        Const.VO_DATALINK_URL = vo_datalink_url
 
     sanity = {
         "flux": flux,
@@ -118,6 +116,6 @@ async def _main():
         sys.exit(1)
 
 
-def main():
-    loop = asyncio.get_event_loop()
+if __name__ == "__main__":
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(_main())

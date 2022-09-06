@@ -73,8 +73,6 @@ class Const(object):
         "v_app_peak": None
     }
 
-    VO_DATALINK_URL = 'https://wallaby.aussrc.org/wallaby/vo/dl/dlmeta?ID='
-
 
 class Run(object):
     def __init__(self, name, sanity_thresholds):
@@ -155,9 +153,9 @@ class Instance(object):
         self.stderr = stderr
 
 
-async def db_run_upsert(conn, run: Run):
+async def db_run_upsert(conn, schema: str, run: Run):
     run_id = await conn.fetchrow(
-        'INSERT INTO wallaby.run (name, sanity_thresholds) \
+        f'INSERT INTO {schema}.run (name, sanity_thresholds) \
         VALUES($1, $2) \
         ON CONFLICT (name, sanity_thresholds) \
         DO UPDATE SET name=EXCLUDED.name \
@@ -169,9 +167,9 @@ async def db_run_upsert(conn, run: Run):
     return run
 
 
-async def db_instance_upsert(conn, instance: Instance):
+async def db_instance_upsert(conn, schema: str, instance: Instance):
     ins_id = await conn.fetchrow(
-        'INSERT INTO wallaby.instance \
+        f'INSERT INTO {schema}.instance \
             (run_id, run_date, filename, boundary, flag_log, reliability_plot,\
             log, parameters, version, return_code, stdout, stderr) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) \
@@ -206,7 +204,7 @@ async def db_instance_upsert(conn, instance: Instance):
     return instance
 
 
-async def db_source_match(conn, run_id: int,
+async def db_source_match(conn, schema: str, run_id: int,
                           detection: dict, uncertainty_sigma: int):
     x = detection['x']
     y = detection['y']
@@ -218,7 +216,7 @@ async def db_source_match(conn, run_id: int,
         f'SELECT \
             d.id, d.instance_id, x, y, z, f_sum, ell_maj, \
             ell_min, w50, w20, flag, unresolved \
-        FROM wallaby.detection as d, wallaby.instance as i \
+        FROM {schema}.detection as d, {schema}.instance as i \
         WHERE \
             ST_3DDistance(\
                 geometry(ST_MakePoint($1, $2, 0)), \
@@ -256,10 +254,10 @@ async def db_source_match(conn, run_id: int,
     return result
 
 
-async def db_detection_product_insert(conn, detection_id, cube, mask,
+async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
                                       mom0, mom1, mom2, chan, spec):
     product_id = await conn.fetchrow(
-        'INSERT INTO wallaby.product \
+        f'INSERT INTO {schema}.product \
             (detection_id, cube, mask, mom0, \
             mom1, mom2, chan, spec) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8) \
@@ -279,7 +277,7 @@ async def db_detection_product_insert(conn, detection_id, cube, mask,
     return product_id[0]
 
 
-async def db_detection_insert(conn, run_id: int, instance_id: int,
+async def db_detection_insert(conn, schema: str, vo_datalink_url:str, run_id: int, instance_id: int,
                               detection: dict, cube: bytes, mask: bytes,
                               mom0: bytes, mom1: bytes, mom2: bytes,
                               chan: bytes, spec: bytes,
@@ -294,7 +292,7 @@ async def db_detection_insert(conn, run_id: int, instance_id: int,
             detection[key] = Const.FULL_SCHEMA[key]
 
     detection_id = await conn.fetchrow(
-        'INSERT INTO wallaby.detection \
+        f'INSERT INTO {schema}.detection \
             (run_id, instance_id, unresolved, name, x, y, z, x_min, x_max, \
             y_min, y_max, z_min, z_max, n_pix, f_min, f_max, f_sum, rel, \
             flag, rms, w20, w50, ell_maj, ell_min, ell_pa, ell3s_maj, \
@@ -307,8 +305,8 @@ async def db_detection_insert(conn, run_id: int, instance_id: int,
             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,\
             $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,\
             $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, \
-            $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, $54 || \
-            currval(pg_get_serial_sequence(\'wallaby.detection\', \'id\'))) \
+            $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, \
+            $54 || currval(pg_get_serial_sequence(\'{schema}.detection\', \'id\'))) \
         ON CONFLICT (\
             name, x, y, z, x_min, x_max, y_min, y_max, z_min, z_max, \
             n_pix, f_min, f_max, f_sum, instance_id, run_id) \
@@ -332,26 +330,26 @@ async def db_detection_insert(conn, run_id: int, instance_id: int,
         detection['x_peak'], detection['y_peak'], detection['z_peak'],
         detection['ra_peak'], detection['dec_peak'], detection['freq_peak'],
         detection['l_peak'], detection['b_peak'], detection['v_rad_peak'],
-        detection['v_opt_peak'], detection['v_app_peak'],
-        Const.VO_DATALINK_URL
+        detection['v_opt_peak'], detection['v_app_peak'], 
+        vo_datalink_url
     )
 
-    await db_detection_product_insert(conn, detection_id[0], cube, mask, mom0,
+    await db_detection_product_insert(conn, schema, detection_id[0], cube, mask, mom0,
                                       mom1, mom2, chan, spec)
     return detection_id[0]
 
 
-async def db_delete_detection(conn, detection_id: int):
+async def db_delete_detection(conn, schema: str, detection_id: int):
     await conn.fetchrow(
-        'DELETE FROM wallaby.detection WHERE id=$1',
+        f'DELETE FROM {schema}.detection WHERE id=$1',
         detection_id
     )
 
 
-async def db_update_detection_unresolved(conn, unresolved: bool,
+async def db_update_detection_unresolved(conn, schema: str, unresolved: bool,
                                          detection_id_list: list):
     await conn.fetchrow(
-        'UPDATE wallaby.detection \
+        f'UPDATE {schema}.detection \
         SET unresolved=$1 \
         WHERE id = ANY($2::bigint[])',
         unresolved,

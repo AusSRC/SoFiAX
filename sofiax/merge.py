@@ -126,7 +126,8 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
     return True
 
 
-async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
+async def match_merge_detections(conn, schema: str, vo_datalink_url: str, 
+                                 run: Run, instance: Instance, cwd: str):
     """The database connection remains open for the duration of this
     process of merging and matching detections.
 
@@ -167,7 +168,7 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
         f"{output_dir}/{output_filename}_rel.eps"
     )
 
-    instance = await db_instance_upsert(conn, instance)
+    instance = await db_instance_upsert(conn, schema, instance)
 
     detect_names = []
     fields = cat['VOTABLE']['RESOURCE']['TABLE']['FIELD']
@@ -213,14 +214,14 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
 
         async with conn.transaction():
             result = await db_source_match(
-                conn, run.run_id, detect_dict,
+                conn, schema, run.run_id, detect_dict,
                 run.sanity_thresholds['uncertainty_sigma']
             )
             result_len = len(result)
             if result_len == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
                 await db_detection_insert(
-                    conn, run.run_id, instance.instance_id, detect_dict,
+                    conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
                     cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                     mom2_bytes, chan_bytes, spec_bytes
                 )
@@ -247,9 +248,9 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                                 f"Replacing, Name: {detect_dict['name']} \
                                 Details: flag 4 with flag 0"
                             )
-                            await db_delete_detection(conn, db_detect['id'])
+                            await db_delete_detection(conn, schema, db_detect['id'])
                             await db_detection_insert(
-                                conn, run.run_id, instance.instance_id,
+                                conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                                 detect_dict, cube_bytes, mask_bytes,
                                 mom0_bytes, mom1_bytes, mom2_bytes,
                                 chan_bytes, spec_bytes, db_detect['unresolved']
@@ -262,10 +263,10 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                                     flag 4 with flag 4"
                                 )
                                 await db_delete_detection(
-                                    conn, db_detect['id']
+                                    conn, schema, db_detect['id']
                                 )
                                 await db_detection_insert(
-                                    conn, run.run_id, instance.instance_id,
+                                    conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                                     detect_dict, cube_bytes, mask_bytes,
                                     mom0_bytes, mom1_bytes, mom2_bytes,
                                     chan_bytes, spec_bytes,
@@ -279,18 +280,20 @@ async def match_merge_detections(conn, run: Run, instance: Instance, cwd: str):
                         Details: Setting to unresolved"
                     )
                     await db_detection_insert(
-                        conn, run.run_id, instance.instance_id, detect_dict,
+                        conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
                         cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                         mom2_bytes, chan_bytes, spec_bytes, True
                     )
                     await db_update_detection_unresolved(
                         conn,
+                        schema,
                         True,
                         [i['id'] for i in result]
                     )
 
 
 async def run_merge(config, run_name, param_list, sanity):
+    schema = config.get('db_schema', 'wallaby')
     host = config['db_hostname']
     name = config['db_name']
     username = config['db_username']
@@ -298,6 +301,7 @@ async def run_merge(config, run_name, param_list, sanity):
 
     execute = int(config['sofia_execute'])
     path = config['sofia_path']
+    vo_datalink_url = f'https://{schema}.aussrc.org/{schema}/vo/dl/dlmeta?ID='
 
     while len(param_list) > 0:
         param_path = param_list.pop(0)
@@ -327,12 +331,12 @@ async def run_merge(config, run_name, param_list, sanity):
         )
         try:
             run = Run(run_name, sanity)
-            run = await db_run_upsert(conn, run)
+            run = await db_run_upsert(conn, schema, run)
             instance = Instance(
                 run.run_id, run_date, output_filename, boundary, None, None,
                 None, params, None, None, None, None
             )
-            instance = await db_instance_upsert(conn, instance)
+            instance = await db_instance_upsert(conn, schema, instance)
         finally:
             await conn.close()
 
@@ -363,11 +367,12 @@ async def run_merge(config, run_name, param_list, sanity):
         try:
             if instance.return_code == 0 or instance.return_code is None:
                 logging.info(f'Sofia completed: {param_path}')
-                await match_merge_detections(conn, run, instance, param_cwd)
+                await match_merge_detections(conn, schema, vo_datalink_url, 
+                                             run, instance, param_cwd)
             else:
                 code = instance.return_code
                 err = f'Sofia completed with return code: {code}'
-                await db_instance_upsert(conn, instance)
+                await db_instance_upsert(conn, schema, instance)
 
                 logging.error(err)
                 logging.error(instance.stderr)
