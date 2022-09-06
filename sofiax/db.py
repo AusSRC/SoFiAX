@@ -277,7 +277,7 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
     return product_id[0]
 
 
-async def db_detection_insert(conn, schema: str, vo_datalink_url:str, run_id: int, instance_id: int,
+async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: int, instance_id: int,
                               detection: dict, cube: bytes, mask: bytes,
                               mom0: bytes, mom1: bytes, mom2: bytes,
                               chan: bytes, spec: bytes,
@@ -330,7 +330,7 @@ async def db_detection_insert(conn, schema: str, vo_datalink_url:str, run_id: in
         detection['x_peak'], detection['y_peak'], detection['z_peak'],
         detection['ra_peak'], detection['dec_peak'], detection['freq_peak'],
         detection['l_peak'], detection['b_peak'], detection['v_rad_peak'],
-        detection['v_opt_peak'], detection['v_app_peak'], 
+        detection['v_opt_peak'], detection['v_app_peak'],
         vo_datalink_url
     )
 

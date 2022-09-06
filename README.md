@@ -21,7 +21,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.-->
 An [AusSRC](https://aussrc.org/) Project.
 
 [![Linting](https://github.com/AusSRC/SoFiAX/actions/workflows/linter.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/linter.yml)
-[![Functional tests](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/tests.yml)
 [![Docker latest](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-latest.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-latest.yml)
 [![Docker release](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-release.yml/badge.svg)](https://github.com/AusSRC/SoFiAX/actions/workflows/docker-build-release.yml)
 

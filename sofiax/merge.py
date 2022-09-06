@@ -126,7 +126,7 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
     return True
 
 
-async def match_merge_detections(conn, schema: str, vo_datalink_url: str, 
+async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                                  run: Run, instance: Instance, cwd: str):
     """The database connection remains open for the duration of this
     process of merging and matching detections.
@@ -367,7 +367,7 @@ async def run_merge(config, run_name, param_list, sanity):
         try:
             if instance.return_code == 0 or instance.return_code is None:
                 logging.info(f'Sofia completed: {param_path}')
-                await match_merge_detections(conn, schema, vo_datalink_url, 
+                await match_merge_detections(conn, schema, vo_datalink_url,
                                              run, instance, param_cwd)
             else:
                 code = instance.return_code
