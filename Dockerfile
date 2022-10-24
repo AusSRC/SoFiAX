@@ -17,11 +17,9 @@
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this program. If not, see <http://www.gnu.org/licenses/>.##
 
-FROM python:3.10
+FROM python:3.10.8-slim
 
-RUN apt update
-RUN apt install -y wcslib-dev
-
+RUN apt update && apt install -y wcslib-dev gcc git
 RUN mkdir -p /app
 RUN mkdir -p /input
 RUN mkdir -p /output
@@ -29,18 +27,15 @@ RUN mkdir -p /output
 WORKDIR /app
 
 RUN git clone https://github.com/SoFiA-Admin/SoFiA-2 
-WORKDIR SoFiA-2 
-RUN ./compile.sh -fopenmp
-RUN chmod +x /app/SoFiA-2/sofia
-RUN ln -s /app/SoFiA-2/sofia /usr/bin/sofia
+WORKDIR ./SoFiA-2 
+RUN ./compile.sh -fopenmp \
+    && chmod +x /app/SoFiA-2/sofia \
+    && ln -s /app/SoFiA-2/sofia /usr/bin/sofia
 
 WORKDIR /app
 
 COPY . /app/sofiax
 WORKDIR /app/sofiax
-RUN pip install -r requirements.txt
-RUN python3 setup.py install
+RUN pip install --upgrade pip && pip install -r requirements.txt && python3 setup.py install
 
 WORKDIR /app/sofiax
-
-ENTRYPOINT ["python3", "-m", "sofiax"]
