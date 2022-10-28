@@ -19,7 +19,7 @@
 
 FROM python:3.10.8-slim
 
-RUN apt update && apt install -y wcslib-dev gcc git
+RUN apt update && apt install -y wcslib-dev gcc git procps
 RUN mkdir -p /app
 RUN mkdir -p /input
 RUN mkdir -p /output
