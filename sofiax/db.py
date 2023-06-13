@@ -18,7 +18,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.#
 
 import json
+import sys
+import logging
 
+
+MAX_BYTEA = 1073741823
 
 class Const(object):
     FULL_SCHEMA = {
@@ -212,40 +216,31 @@ async def db_source_match(conn, schema: str, run_id: int,
     err_x = detection['err_x']
     err_y = detection['err_y']
     err_z = detection['err_z']
+    
     result = await conn.fetch(
-        f'SELECT \
-            d.id, d.instance_id, x, y, z, f_sum, ell_maj, \
-            ell_min, w50, w20, flag, unresolved \
-        FROM {schema}.detection as d, {schema}.instance as i \
-        WHERE \
-            ST_3DDistance(\
-                geometry(ST_MakePoint($1, $2, 0)), \
-                geometry(ST_MakePoint(x, y, 0))\
-            ) <= {uncertainty_sigma} * \
-            SQRT( \
-                (($1 - x)^2 * ($4^2 + err_x^2) \
-                + ($2 - y)^2 * ($5^2 + err_y^2)) \
-            / COALESCE( \
-                NULLIF(\
-                    (($1 - x)^2 + ($2 - y)^2), 0), 1)) \
-                    AND \
-                    ST_3DDistance(\
-                        geometry(ST_MakePoint(0, 0, $3)), \
-                        geometry(ST_MakePoint(0, 0, z)) \
-                    ) <= {uncertainty_sigma} * \
-                        SQRT($6 ^ 2 + err_z ^ 2) \
-                    AND d.instance_id = i.id \
-                    AND i.run_id = $7 \
-        ORDER BY d.id \
-        ASC FOR UPDATE OF d',
+        f"""SELECT 
+            d.id, d.instance_id, x, y, z, f_sum, ell_maj, 
+            ell_min, w50, w20, flag, unresolved 
+            FROM {schema}.detection as d, {schema}.instance as i 
+            WHERE 
+            ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) 
+            <= {uncertainty_sigma} * SQRT( (($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) 
+            / COALESCE( NULLIF( (($1 - x)^2 + ($2 - y)^2), 0), 1) ) 
+            AND 
+            ST_3DDistance( geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) 
+            <= {uncertainty_sigma} * SQRT($6^2 + err_z^2) 
+            AND d.instance_id = i.id 
+            AND i.run_id = $7 
+            ORDER BY d.id 
+            ASC FOR UPDATE OF d""",
         x,
         y,
         z,
         err_x,
         err_y,
         err_z,
-        run_id
-    )
+        run_id)
+
     for i, j in enumerate(result):
         # do not want the original detection if it already exists
         if j['x'] == x and j['y'] == y and j['z'] == z:
@@ -254,8 +249,44 @@ async def db_source_match(conn, schema: str, run_id: int,
     return result
 
 
+def _check_bytea(var):
+    if sys.getsizeof(var) < MAX_BYTEA:
+        return var
+    else:
+        return None
+
+
 async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
                                       mom0, mom1, mom2, chan, spec):
+
+    cube_bytes = _check_bytea(cube)
+    if cube_bytes is None:
+        logging.warn(f"cube for {detection_id} too large, ignoring")
+
+    mask_bytes = _check_bytea(mask)
+    if mask_bytes is None:
+        logging.warn(f"mask for {detection_id} too large, ignoring")
+
+    mom0_bytes = _check_bytea(mom0)
+    if mom0_bytes is None:
+        logging.warn(f"mom0 for {detection_id} too large, ignoring")
+
+    mom1_bytes = _check_bytea(mom1)
+    if mom1_bytes is None:
+        logging.warn(f"mom1 for {detection_id} too large, ignoring")
+
+    mom2_bytes = _check_bytea(mom2)
+    if mom2_bytes is None:
+        logging.warn(f"mom2 for {detection_id} too large, ignoring")
+
+    chan_bytes = _check_bytea(chan)
+    if chan_bytes is None:
+        logging.warn(f"chan for {detection_id} too large, ignoring")
+
+    spec_bytes = _check_bytea(spec)
+    if spec_bytes is None:
+        logging.warn(f"spec for {detection_id} too large, ignoring")
+
     product_id = await conn.fetchrow(
         f'INSERT INTO {schema}.product \
             (detection_id, cube, mask, mom0, \
@@ -265,13 +296,13 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
         DO UPDATE SET detection_id=EXCLUDED.detection_id \
         RETURNING id',
         detection_id,
-        cube,
-        mask,
-        mom0,
-        mom1,
-        mom2,
-        chan,
-        spec
+        cube_bytes,
+        mask_bytes,
+        mom0_bytes,
+        mom1_bytes,
+        mom2_bytes,
+        chan_bytes,
+        spec_bytes
     )
 
     return product_id[0]
@@ -310,7 +341,7 @@ async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: i
         ON CONFLICT (\
             name, x, y, z, x_min, x_max, y_min, y_max, z_min, z_max, \
             n_pix, f_min, f_max, f_sum, instance_id, run_id) \
-        DO UPDATE SET ra=EXCLUDED.ra \
+        DO UPDATE SET ra=EXCLUDED.ra, unresolved=EXCLUDED.unresolved \
         RETURNING id',
         detection['run_id'], detection['instance_id'], detection['unresolved'],
         detection['name'], detection['x'], detection['y'], detection['z'],

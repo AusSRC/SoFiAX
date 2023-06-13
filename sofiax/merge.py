@@ -96,6 +96,8 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
     diff = abs(f1 - f2) * 100 / ((abs(f1) + abs(f2)) / 2)
     # gone beyond the % tolerance
     if diff > sanity_thresholds['flux']:
+        message = f"Var: {f1}, {f2}, flux {round(diff, 2)}% > {sanity_thresholds['flux']}%"
+        logging.info(message)
         # require manual separation, add ref to UnresolvedDetection
         return False
 
@@ -104,10 +106,15 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
     max_diff = abs(max1 - max2) * 100 / ((abs(max1) + abs(max2)) / 2)
     min_diff = abs(min1 - min2) * 100 / ((abs(min1) + abs(min2)) / 2)
     if max_diff > max_extent:
+        message = f"Var: ell_maj Check: {round(max_diff, 2)}% > {max_extent}%"
+        logging.info(message)
         # require manual separation, add ref to UnresolvedDetection
         return False
 
     if min_diff > min_extent:
+        message = f"Var: ell_min Check: {round(max_diff, 2)}% > {min_extent}%"
+        logging.info(message)
+
         # require manual separation, add ref to UnresolvedDetection
         return False
 
@@ -116,10 +123,15 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
     max_diff = abs(max1 - max2) * 100 / ((abs(max1) + abs(max2)) / 2)
     min_diff = abs(min1 - min2) * 100 / ((abs(min1) + abs(min2)) / 2)
     if max_diff > max_extent:
+        message = f"Var: w20 Check: {round(max_diff, 2)}% > {max_extent}%"
+        logging.info(message)
         # require manual separation, add ref to UnresolvedDetection
         return False
 
     if min_diff > min_extent:
+        message = f"Var: w50 Check: {round(max_diff, 2)}% > {min_extent}%"
+        logging.info(message)
+
         # require manual separation, add ref to UnresolvedDetection
         return False
 
@@ -215,21 +227,19 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
         async with conn.transaction():
             result = await db_source_match(
                 conn, schema, run.run_id, detect_dict,
-                run.sanity_thresholds['uncertainty_sigma']
-            )
+                run.sanity_thresholds['uncertainty_sigma'])
+
             result_len = len(result)
             if result_len == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
                 await db_detection_insert(
                     conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
                     cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                    mom2_bytes, chan_bytes, spec_bytes
-                )
+                    mom2_bytes, chan_bytes, spec_bytes)
             else:
                 logging.info(
-                    f"Duplicates, Name: {detect_dict['name']} \
-                    Details: {result_len} hit(s)"
-                )
+                    f"Duplicates, Name: {detect_dict['name']} Details: {result_len} hit(s)")
+
                 resolved = False
                 for db_detect in result:
                     flux = (detect_dict['f_sum'], db_detect['f_sum'])
@@ -237,59 +247,58 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                                detect_dict['ell_min'], db_detect['ell_min'])
                     spectral = (detect_dict['w20'], db_detect['w20'],
                                 detect_dict['w50'], db_detect['w50'])
+
                     check_result = sanity_check(
-                        flux, spatial, spectral, run.sanity_thresholds
-                    )
+                        flux, spatial, spectral, run.sanity_thresholds)
+
                     if check_result:
                         detect_flag = detect_dict['flag']
                         db_detect_flag = db_detect['flag']
                         if detect_flag == 0 and db_detect_flag == 4:
                             logging.info(
                                 f"Replacing, Name: {detect_dict['name']} \
-                                Details: flag 4 with flag 0"
-                            )
+                                Details: flag 4 with flag 0")
+
                             await db_delete_detection(conn, schema, db_detect['id'])
                             await db_detection_insert(
                                 conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                                 detect_dict, cube_bytes, mask_bytes,
                                 mom0_bytes, mom1_bytes, mom2_bytes,
-                                chan_bytes, spec_bytes, db_detect['unresolved']
-                            )
+                                chan_bytes, spec_bytes, db_detect['unresolved'])
+
                         elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:  # noqa
                             if bool(random.getrandbits(1)) is True:
                                 logging.info(
                                     f"Replacing, Name: {detect_dict['name']} \
                                     Details: flag 0 with flag 0 or \
-                                    flag 4 with flag 4"
-                                )
+                                    flag 4 with flag 4")
+
                                 await db_delete_detection(
-                                    conn, schema, db_detect['id']
-                                )
+                                    conn, schema, db_detect['id'])
+
                                 await db_detection_insert(
                                     conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                                     detect_dict, cube_bytes, mask_bytes,
                                     mom0_bytes, mom1_bytes, mom2_bytes,
                                     chan_bytes, spec_bytes,
-                                    db_detect['unresolved']
-                                )
+                                    db_detect['unresolved'])
+
                         resolved = True
                         break
+
                 if resolved is False:
-                    logging.info(
-                        f"Not Resolved, Name: {detect_dict['name']}\
-                        Details: Setting to unresolved"
-                    )
+                    logging.info(f"Not Resolved, Name: {detect_dict['name']} Details: Setting to unresolved")
+
                     await db_detection_insert(
                         conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
                         cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                        mom2_bytes, chan_bytes, spec_bytes, True
-                    )
+                        mom2_bytes, chan_bytes, spec_bytes, True)
+
                     await db_update_detection_unresolved(
                         conn,
                         schema,
                         True,
-                        [i['id'] for i in result]
-                    )
+                        [i['id'] for i in result])
 
 
 async def run_merge(config, run_name, param_list, sanity):
