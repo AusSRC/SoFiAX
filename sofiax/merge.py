@@ -256,8 +256,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                         db_detect_flag = db_detect['flag']
                         if detect_flag == 0 and db_detect_flag == 4:
                             logging.info(
-                                f"Replacing, Name: {detect_dict['name']} \
-                                Details: flag 4 with flag 0")
+                                f"Replacing, Name: {detect_dict['name']} Details: flag 4 with flag 0")
 
                             await db_delete_detection(conn, schema, db_detect['id'])
                             await db_detection_insert(
@@ -269,9 +268,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                         elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:  # noqa
                             if bool(random.getrandbits(1)) is True:
                                 logging.info(
-                                    f"Replacing, Name: {detect_dict['name']} \
-                                    Details: flag 0 with flag 0 or \
-                                    flag 4 with flag 4")
+                                    f"Replacing, Name: {detect_dict['name']} Details: flag 0 with flag 0 or flag 4 with flag 4")
 
                                 await db_delete_detection(
                                     conn, schema, db_detect['id'])
@@ -315,7 +312,7 @@ async def run_merge(config, run_name, param_list, sanity):
     while len(param_list) > 0:
         param_path = param_list.pop(0)
 
-        logging.info(f'Processing {param_path}')
+        logging.info(f'*** Processing {param_path} ***')
         params = await parse_sofia_param_file(param_path)
         param_cwd = os.path.dirname(os.path.abspath(param_path))
 

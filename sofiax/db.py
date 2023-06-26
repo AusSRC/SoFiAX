@@ -250,42 +250,48 @@ async def db_source_match(conn, schema: str, run_id: int,
 
 
 def _check_bytea(var):
-    if sys.getsizeof(var) < MAX_BYTEA:
-        return var
+    num_bytes = sys.getsizeof(var)
+    if num_bytes < MAX_BYTEA:
+        return var, num_bytes
     else:
-        return None
+        return None, 0
 
 
 async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
                                       mom0, mom1, mom2, chan, spec):
 
-    cube_bytes = _check_bytea(cube)
+    cube_bytes, cube_bytes_t = _check_bytea(cube)
     if cube_bytes is None:
         logging.warn(f"cube for {detection_id} too large, ignoring")
 
-    mask_bytes = _check_bytea(mask)
+    mask_bytes, mask_bytes_t = _check_bytea(mask)
     if mask_bytes is None:
         logging.warn(f"mask for {detection_id} too large, ignoring")
 
-    mom0_bytes = _check_bytea(mom0)
+    mom0_bytes, mom0_bytes_t = _check_bytea(mom0)
     if mom0_bytes is None:
         logging.warn(f"mom0 for {detection_id} too large, ignoring")
 
-    mom1_bytes = _check_bytea(mom1)
+    mom1_bytes, mom1_bytes_t = _check_bytea(mom1)
     if mom1_bytes is None:
         logging.warn(f"mom1 for {detection_id} too large, ignoring")
 
-    mom2_bytes = _check_bytea(mom2)
+    mom2_bytes, mom2_bytes_t = _check_bytea(mom2)
     if mom2_bytes is None:
         logging.warn(f"mom2 for {detection_id} too large, ignoring")
 
-    chan_bytes = _check_bytea(chan)
+    chan_bytes, chan_bytes_t = _check_bytea(chan)
     if chan_bytes is None:
         logging.warn(f"chan for {detection_id} too large, ignoring")
 
-    spec_bytes = _check_bytea(spec)
+    spec_bytes, spec_bytes_t = _check_bytea(spec)
     if spec_bytes is None:
         logging.warn(f"spec for {detection_id} too large, ignoring")
+
+    total_bytes = cube_bytes_t + mask_bytes_t + mom0_bytes_t + mom1_bytes_t + chan_bytes_t + spec_bytes_t
+    if total_bytes > MAX_BYTEA:
+        logging.warn(f"products for {detection_id} too large, ignoring")
+        return
 
     product_id = await conn.fetchrow(
         f'INSERT INTO {schema}.product \
@@ -302,10 +308,7 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
         mom1_bytes,
         mom2_bytes,
         chan_bytes,
-        spec_bytes
-    )
-
-    return product_id[0]
+        spec_bytes)
 
 
 async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: int, instance_id: int,
