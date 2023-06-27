@@ -290,8 +290,14 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
 
     total_bytes = cube_bytes_t + mask_bytes_t + mom0_bytes_t + mom1_bytes_t + chan_bytes_t + spec_bytes_t
     if total_bytes > MAX_BYTEA:
-        logging.warn(f"products for {detection_id} too large, ignoring")
-        return
+        total_bytes = mom0_bytes_t + mom1_bytes_t + spec_bytes_t
+        if total_bytes < MAX_BYTEA:
+            cube_bytes = None
+            mask_bytes = None
+            chan_bytes = None
+        else:
+            logging.warn(f"Products for {detection_id} too large, ignoring")
+            return
 
     product_id = await conn.fetchrow(
         f'INSERT INTO {schema}.product \

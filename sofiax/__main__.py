@@ -103,13 +103,12 @@ async def _main():
 
     Run.check_inputs(sanity)
 
-    task_list = [
-        asyncio.create_task(
-            run_merge(config, run_name, args.param, sanity)
-        ) for _ in range(int(processes))
-    ]
-
     try:
+        task_list = [
+            asyncio.create_task(
+                run_merge(config, run_name, args.param, sanity)
+            ) for _ in range(int(processes))
+        ]
         await asyncio.gather(*task_list)
     except Exception as e:
         logging.exception(e)
