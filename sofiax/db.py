@@ -258,7 +258,7 @@ def _check_bytea(var):
 
 
 async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
-                                      mom0, mom1, mom2, chan, spec):
+                                      mom0, mom1, mom2, chan, spec, pv):
 
     cube_bytes, cube_bytes_t = _check_bytea(cube)
     if cube_bytes is None:
@@ -288,7 +288,11 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
     if spec_bytes is None:
         logging.warn(f"spec for {detection_id} too large, ignoring")
 
-    total_bytes = cube_bytes_t + mask_bytes_t + mom0_bytes_t + mom1_bytes_t + chan_bytes_t + spec_bytes_t
+    pv_bytes, pv_bytes_t = _check_bytea(pv)
+    if pv_bytes is None:
+        logging.warn(f"pv for {detection_id} too large, ignoring")
+
+    total_bytes = cube_bytes_t + mask_bytes_t + mom0_bytes_t + mom1_bytes_t + chan_bytes_t + spec_bytes_t + pv_bytes_t
     if total_bytes > MAX_BYTEA:
         total_bytes = mom0_bytes_t + mom1_bytes_t + spec_bytes_t
         if total_bytes < MAX_BYTEA:
@@ -302,8 +306,8 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
     product_id = await conn.fetchrow(
         f'INSERT INTO {schema}.product \
             (detection_id, cube, mask, mom0, \
-            mom1, mom2, chan, spec) \
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8) \
+            mom1, mom2, chan, spec, pv) \
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) \
         ON CONFLICT (detection_id) \
         DO UPDATE SET detection_id=EXCLUDED.detection_id \
         RETURNING id',
@@ -314,13 +318,14 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
         mom1_bytes,
         mom2_bytes,
         chan_bytes,
-        spec_bytes)
+        spec_bytes,
+        pv_bytes)
 
 
 async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: int, instance_id: int,
                               detection: dict, cube: bytes, mask: bytes,
                               mom0: bytes, mom1: bytes, mom2: bytes,
-                              chan: bytes, spec: bytes,
+                              chan: bytes, spec: bytes, pv: bytes,
                               unresolved: bool = False):
 
     detection['run_id'] = run_id
@@ -375,7 +380,7 @@ async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: i
     )
 
     await db_detection_product_insert(conn, schema, detection_id[0], cube, mask, mom0,
-                                      mom1, mom2, chan, spec)
+                                      mom1, mom2, chan, spec, pv)
     return detection_id[0]
 
 

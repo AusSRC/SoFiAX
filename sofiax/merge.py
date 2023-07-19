@@ -223,6 +223,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
         # NOTE: cubelet _chan.fits files renames _snr.fits in SoFiA-2 v2.3
         chan_bytes = await _get_file_bytes(f"{base}_snr.fits")
         spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
+        pv_bytes = await _get_file_bytes(f"{base}_pv.fits")
 
         async with conn.transaction():
             result = await db_source_match(
@@ -235,7 +236,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                 await db_detection_insert(
                     conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
                     cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                    mom2_bytes, chan_bytes, spec_bytes)
+                    mom2_bytes, chan_bytes, spec_bytes, pv_bytes)
             else:
                 logging.info(
                     f"Duplicates, Name: {detect_dict['name']} Details: {result_len} hit(s)")
@@ -263,7 +264,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                                 conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                                 detect_dict, cube_bytes, mask_bytes,
                                 mom0_bytes, mom1_bytes, mom2_bytes,
-                                chan_bytes, spec_bytes, db_detect['unresolved'])
+                                chan_bytes, spec_bytes, pv_bytes, db_detect['unresolved'])
 
                         elif detect_flag == 0 and db_detect_flag == 0 or detect_flag == 4 and db_detect_flag == 4:  # noqa
                             if bool(random.getrandbits(1)) is True:
@@ -277,7 +278,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                                     conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                                     detect_dict, cube_bytes, mask_bytes,
                                     mom0_bytes, mom1_bytes, mom2_bytes,
-                                    chan_bytes, spec_bytes,
+                                    chan_bytes, spec_bytes, pv_bytes,
                                     db_detect['unresolved'])
 
                         resolved = True
@@ -289,7 +290,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                     await db_detection_insert(
                         conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
                         cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                        mom2_bytes, chan_bytes, spec_bytes, True)
+                        mom2_bytes, chan_bytes, spec_bytes, pv_bytes, True)
 
                     await db_update_detection_unresolved(
                         conn,
