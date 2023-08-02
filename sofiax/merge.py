@@ -380,6 +380,9 @@ async def run_merge(config, run_name, param_list, sanity):
         if execute == 1:
             logging.info(f'Executing Sofia {param_path}')
 
+            output_path = os.path.abspath(params['output.directory'])
+            await aiofiles.os.makedirs(output_path, exist_ok=True)
+
             sofia_cmd = f'{path} {param_path}'
             proc = await asyncio.create_subprocess_shell(
                 sofia_cmd,
@@ -398,8 +401,8 @@ async def run_merge(config, run_name, param_list, sanity):
             user=username,
             password=password,
             database=name,
-            host=host
-        )
+            host=host)
+
         try:
             if instance.return_code == 0 or instance.return_code is None:
                 logging.info(f'Sofia completed: {param_path}')
