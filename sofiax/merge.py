@@ -34,6 +34,8 @@ from sofiax.db import db_run_upsert, db_instance_upsert, \
     db_detection_insert, db_source_match, \
     db_delete_detection, db_update_detection_unresolved, Run, Instance
 
+from sofiax.fits import extract_fits_header
+
 
 async def _get_file_bytes(path: str, mode: str = 'rb'):
     buffer = []
@@ -318,7 +320,34 @@ async def run_merge(config, run_name, param_list, sanity):
         param_cwd = os.path.dirname(os.path.abspath(param_path))
 
         input_fits = params['input.data']
-        boundary = [int(i) for i in params['input.region'].split(',')]
+
+        region = params.get('input.region', None)
+        if not region:
+            header = await extract_fits_header(input_fits)
+            
+            x_max = int(header.get('NAXIS1'))
+            y_max = int(header.get('NAXIS2'))
+
+            freq_axis_1 = header.get('CTYPE3', None)
+            freq_axis_2 = header.get('CTYPE4', None)
+
+            if freq_axis_1:
+                freq_axis_1 = freq_axis_1.strip()
+
+            if freq_axis_2:
+                freq_axis_2 = freq_axis_2.strip()
+
+            if freq_axis_1 == 'FREQ':
+                freq_axis = 'NAXIS3'
+
+            if freq_axis_2 == 'FREQ':
+                freq_axis = 'NAXIS4'
+
+            z_max = int(header.get(freq_axis))
+
+            boundary = [0, x_max-1, 0, y_max-1, 0, z_max-1]
+        else:
+            boundary = [int(i) for i in params['input.region'].split(',')]
 
         if os.path.isabs(input_fits) is False:
             input_fits = f"{param_cwd}/{os.path.basename(input_fits)}"

@@ -35,4 +35,4 @@ async def extract_fits_header(filepath, loop=None):
         if isinstance(value, astropy.io.fits.header._HeaderCommentaryCards):
             value = [i for i in value]
         hdr_dict[key] = value
-    return json.dumps(hdr_dict)
+    return hdr_dict
