@@ -23,6 +23,7 @@ import random
 import shutil
 import asyncio
 import aiofiles
+import aiofiles.os
 import xmltodict
 import configparser
 import logging
