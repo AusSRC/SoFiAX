@@ -231,6 +231,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
 
         # Do not merge the sources into the run, just do a direct import
         if perform_merge == 0:
+            logging.info(f"Not performing merge, doing direct import. Name: {detect_dict['name']}")
             async with conn.transaction():
                 await db_detection_insert(
                         conn, schema, vo_datalink_url, run.run_id, instance.instance_id, 
