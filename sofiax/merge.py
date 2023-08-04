@@ -236,7 +236,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                 await db_detection_insert(
                         conn, schema, vo_datalink_url, run.run_id, instance.instance_id, 
                         detect_dict, cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
-                        mom2_bytes, chan_bytes, spec_bytes, pv_bytes, True)
+                        mom2_bytes, chan_bytes, spec_bytes, pv_bytes, False)
             # move onto the next source
             continue
 
