@@ -325,7 +325,7 @@ async def run_merge(config, run_name, param_list, sanity):
         region = params.get('input.region', None)
         if not region:
             header = await extract_fits_header(input_fits)
-            
+
             x_max = int(header.get('NAXIS1'))
             y_max = int(header.get('NAXIS2'))
 

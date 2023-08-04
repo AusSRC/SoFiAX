@@ -24,6 +24,7 @@ import logging
 
 MAX_BYTEA = 1073741823
 
+
 class Const(object):
     FULL_SCHEMA = {
         "name": None,
@@ -216,7 +217,7 @@ async def db_source_match(conn, schema: str, run_id: int,
     err_x = detection['err_x']
     err_y = detection['err_y']
     err_z = detection['err_z']
-    
+
     result = await conn.fetch(
         f"""SELECT 
             d.id, d.instance_id, x, y, z, f_sum, ell_maj, 

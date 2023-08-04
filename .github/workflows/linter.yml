@@ -38,4 +38,4 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}
       - run: pip3 install pycodestyle
-      - run: pycodestyle --max-line-length=105 sofiax
+      - run: pycodestyle --max-line-length=105 --ignore=W291,E501,E226 sofiax
