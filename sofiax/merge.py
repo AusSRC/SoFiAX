@@ -422,7 +422,7 @@ async def run_merge(config, run_name, param_list, sanity):
 
         try:
             if instance.return_code == 0 or instance.return_code is None:
-                perform_merge = config.get("perform_merge", 1)
+                perform_merge = int(config.get("perform_merge", 1))
 
                 logging.info(f'Sofia completed: {param_path}')
                 await match_merge_detections(conn, schema, vo_datalink_url,
