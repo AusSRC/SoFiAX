@@ -233,10 +233,10 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
         if perform_merge == 0:
             async with conn.transaction():
                 await db_detection_insert(
-                        conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
-                        cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
+                        conn, schema, vo_datalink_url, run.run_id, instance.instance_id, 
+                        detect_dict, cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                         mom2_bytes, chan_bytes, spec_bytes, pv_bytes, True)
-            # move into the next source
+            # move onto the next source
             continue
 
         async with conn.transaction():
@@ -248,8 +248,8 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
             if result_len == 0:
                 logging.info(f"No duplicates, Name: {detect_dict['name']}")
                 await db_detection_insert(
-                    conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
-                    cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
+                    conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
+                    detect_dict, cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                     mom2_bytes, chan_bytes, spec_bytes, pv_bytes)
             else:
                 logging.info(
@@ -313,7 +313,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                         [i['id'] for i in result])
 
 
-async def run_merge(config, run_name, param_list, sanity, perform_merge):
+async def run_merge(config, run_name, param_list, sanity):
     schema = config.get('db_schema', 'wallaby')
     host = config['db_hostname']
     name = config['db_name']
@@ -395,6 +395,10 @@ async def run_merge(config, run_name, param_list, sanity, perform_merge):
             output_path = os.path.abspath(params['output.directory'])
             await aiofiles.os.makedirs(output_path, exist_ok=True)
 
+            sofia_clean = int(config.get("sofia_clean", 0))
+            if sofia_clean == 1:
+                await remove_output(params, param_cwd)
+
             sofia_cmd = f'{path} {param_path}'
             proc = await asyncio.create_subprocess_shell(
                 sofia_cmd,
@@ -417,6 +421,8 @@ async def run_merge(config, run_name, param_list, sanity, perform_merge):
 
         try:
             if instance.return_code == 0 or instance.return_code is None:
+                perform_merge = config.get("perform_merge", 1)
+
                 logging.info(f'Sofia completed: {param_path}')
                 await match_merge_detections(conn, schema, vo_datalink_url,
                                              run, instance, param_cwd, perform_merge)
