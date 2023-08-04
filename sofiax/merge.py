@@ -142,7 +142,8 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
 
 
 async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
-                                 run: Run, instance: Instance, cwd: str):
+                                 run: Run, instance: Instance, cwd: str,
+                                 perform_merge: int):
     """The database connection remains open for the duration of this
     process of merging and matching detections.
 
@@ -228,6 +229,16 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
         spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
         pv_bytes = await _get_file_bytes(f"{base}_pv.fits")
 
+        # Do not merge the sources into the run, just do a direct import
+        if perform_merge == 0:
+            async with conn.transaction():
+                await db_detection_insert(
+                        conn, schema, vo_datalink_url, run.run_id, instance.instance_id, detect_dict,
+                        cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
+                        mom2_bytes, chan_bytes, spec_bytes, pv_bytes, True)
+            # move into the next source
+            continue
+
         async with conn.transaction():
             result = await db_source_match(
                 conn, schema, run.run_id, detect_dict,
@@ -302,7 +313,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                         [i['id'] for i in result])
 
 
-async def run_merge(config, run_name, param_list, sanity):
+async def run_merge(config, run_name, param_list, sanity, perform_merge):
     schema = config.get('db_schema', 'wallaby')
     host = config['db_hostname']
     name = config['db_name']
@@ -408,7 +419,7 @@ async def run_merge(config, run_name, param_list, sanity):
             if instance.return_code == 0 or instance.return_code is None:
                 logging.info(f'Sofia completed: {param_path}')
                 await match_merge_detections(conn, schema, vo_datalink_url,
-                                             run, instance, param_cwd)
+                                             run, instance, param_cwd, perform_merge)
             else:
                 code = instance.return_code
                 err = f'Sofia completed with return code: {code}'
