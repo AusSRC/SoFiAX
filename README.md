@@ -48,6 +48,23 @@ This project extends the capability of the [SoFiA-2](https://github.com/SoFiA-Ad
   python setup.py install
   ```
 
+## Container
+
+AusSRC maintains a SoFiAX container which holds a build of SoFiA-2.
+
+### Docker
+
+```
+docker pull aussrc/sofiax
+```
+
+### Singularity
+
+```
+singularity pull docker://aussrc/sofiax
+```
+
+
 ### Running a SofiAX instance:
 
 First create a SoFiAX configuration file which contains a link to SoFiA-2 instance and database details. 
@@ -74,14 +91,15 @@ First create a SoFiAX configuration file which contains a link to SoFiA-2 instan
   uncertainty_sigma = 5
   ```
   
+  * run_name [str]: unique run name.
   * sofia_execute [0..1]: If 0 then dont execute SoFiA, just parse the output if it already exists. If 1 then execute SoFiA.
-  * sofa_path: file path to the SoFiA-2 executable.
+  * sofa_path [str]: file path to the SoFiA-2 executable. Set to */usr/bin/sofia* if running in container.
   * sofia_processes [0..N]: number of SoFiA processes to run in parallel, driven by how many SoFiA parameter files that are given to a SoFiAX instance. 
-  * run_name: unique run name.
   * spatial_extent [int min (%), int max (%)]: sanity threshold for spatial extents.
   * spectral_extent [int min (%), int max (%)]: sanity threshold for spectral extents.
   * flux [int (%)]: sanity threshold for flux.
   * uncertainty_sigma [int]: multiply uncertainty by a value (5 default).
+  * perform_merge [0..1]: If 0 then don't merge the sources into the run, just do a direct import.
 
 Each run must be a given a unique name which all instances and detections will be grouped under in the database. Each run must specify the configuration file (as above) and one or more SoFiA-2 parameter file(s).
 The spacial and spectral extents and flux are used as the sanity thresholds (specified as a %) which are used when a source matches another in the database. If a known source is found to be withing the threshold the source is either replaced with the existing source or ignored based on a random 'roll of the dice'. If the conflicting source is not within the specified thresholds it is marked as 'not resolved' and must tbe resolved manually within the web portal. 
