@@ -26,7 +26,7 @@ RUN mkdir -p /output
 
 WORKDIR /app
 
-RUN git clone https://github.com/SoFiA-Admin/SoFiA-2 
+RUN git clone https://gitlab.com/SoFiA-Admin/SoFiA-2
 WORKDIR ./SoFiA-2 
 RUN ./compile.sh -fopenmp \
     && chmod +x /app/SoFiA-2/sofia \
