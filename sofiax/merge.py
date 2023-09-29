@@ -323,7 +323,7 @@ async def run_merge(config, run_name, param_list, sanity):
 
     execute = int(config['sofia_execute'])
     path = config['sofia_path']
-    vo_datalink_url = f'https://{schema}.aussrc.org/{schema}/vo/dl/dlmeta?ID='
+    vo_datalink_url = f'https://{schema}.aussrc.org/survey/vo/dl/dlmeta?ID='
 
     while len(param_list) > 0:
         param_path = param_list.pop(0)
