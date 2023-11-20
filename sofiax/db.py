@@ -162,7 +162,7 @@ async def db_run_upsert(conn, schema: str, run: Run):
     run_id = await conn.fetchrow(
         f'INSERT INTO {schema}.run (name, sanity_thresholds) \
         VALUES($1, $2) \
-        ON CONFLICT (name, sanity_thresholds) \
+        ON CONFLICT (name) \
         DO UPDATE SET name=EXCLUDED.name \
         RETURNING id',
         run.name,
