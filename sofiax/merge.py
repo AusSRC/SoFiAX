@@ -33,7 +33,7 @@ from datetime import datetime
 
 from sofiax.db import db_run_upsert, db_instance_upsert, \
     db_detection_insert, db_source_match, \
-    db_delete_detection, db_update_detection_unresolved, Run, Instance
+    db_delete_detection, db_update_detection_unresolved, db_lock_run, Run, Instance
 
 from sofiax.fits import extract_fits_header
 
@@ -58,6 +58,8 @@ async def _get_file_bytes(path: str, mode: str = 'rb'):
 
 async def parse_sofia_param_file(sofia_param_path: str):
     content = await _get_file_bytes(sofia_param_path, mode='r')
+    if not content:
+        raise Exception(f"{sofia_param_path} is empty")
     file_contents = f"[dummy_section]\n{content}"
 
     params = {}
@@ -181,66 +183,68 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
 
     instance.run_date = datetime.strptime(run_date, '%a, %d %b %Y, %H:%M:%S')
     instance.reliability_plot = await _get_file_bytes(
-        f"{output_dir}/{output_filename}_rel.eps"
-    )
+        f"{output_dir}/{output_filename}_rel.eps")
 
-    instance = await db_instance_upsert(conn, schema, instance)
+    # Lock the entire run for an instance to run exclusively
+    async with conn.transaction():
+        await db_lock_run(conn, schema, run)
 
-    detect_names = []
-    fields = cat['VOTABLE']['RESOURCE']['TABLE']['FIELD']
-    for _, j in enumerate(fields):
-        detect_names.append(j['@name'])
+        instance = await db_instance_upsert(conn, schema, instance)
 
-    tr = cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']
-    if not isinstance(tr, list):
-        tr = [tr]
+        detect_names = []
+        fields = cat['VOTABLE']['RESOURCE']['TABLE']['FIELD']
+        for _, j in enumerate(fields):
+            detect_names.append(j['@name'])
 
-    for _, j in enumerate(tr):
-        detect_dict = {}
-        for i, item in enumerate(j['TD']):
-            try:
-                detect_dict[detect_names[i]] = float(item)
-            except ValueError:
-                detect_dict[detect_names[i]] = item
+        tr = cat['VOTABLE']['RESOURCE']['TABLE']['DATA']['TABLEDATA']['TR']
+        if not isinstance(tr, list):
+            tr = [tr]
 
-        flag = detect_dict['flag']
-        # only check 0 or 4 flagged detections, throw the others away
-        if flag not in [0, 4]:
-            continue
+        for _, j in enumerate(tr):
+            detect_dict = {}
+            for i, item in enumerate(j['TD']):
+                try:
+                    detect_dict[detect_names[i]] = float(item)
+                except ValueError:
+                    detect_dict[detect_names[i]] = item
 
-        # remove id from detection list
-        detect_id = int(detect_dict['id'])
-        del detect_dict['id']
+            flag = detect_dict['flag']
+            # only check 0 or 4 flagged detections, throw the others away
+            if flag not in [0, 4]:
+                continue
 
-        # adjust x, y, z to absolute terms based on region applied
-        detect_dict['x'] = detect_dict['x'] + instance.boundary[0]
-        detect_dict['y'] = detect_dict['y'] + instance.boundary[2]
-        detect_dict['z'] = detect_dict['z'] + instance.boundary[4]
+            # remove id from detection list
+            detect_id = int(detect_dict['id'])
+            del detect_dict['id']
 
-        base = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}"  # noqa
+            # adjust x, y, z to absolute terms based on region applied
+            detect_dict['x'] = detect_dict['x'] + instance.boundary[0]
+            detect_dict['y'] = detect_dict['y'] + instance.boundary[2]
+            detect_dict['z'] = detect_dict['z'] + instance.boundary[4]
 
-        cube_bytes = await _get_file_bytes(f"{base}_cube.fits")
-        mask_bytes = await _get_file_bytes(f"{base}_mask.fits")
-        mom0_bytes = await _get_file_bytes(f"{base}_mom0.fits")
-        mom1_bytes = await _get_file_bytes(f"{base}_mom1.fits")
-        mom2_bytes = await _get_file_bytes(f"{base}_mom2.fits")
-        # NOTE: cubelet _chan.fits files renames _snr.fits in SoFiA-2 v2.3
-        chan_bytes = await _get_file_bytes(f"{base}_snr.fits")
-        spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
-        pv_bytes = await _get_file_bytes(f"{base}_pv.fits")
+            base = f"{output_dir}/{output_filename}_cubelets/{output_filename}_{detect_id}"  # noqa
 
-        # Do not merge the sources into the run, just do a direct import
-        if perform_merge == 0:
-            logging.info(f"Not performing merge, doing direct import. Name: {detect_dict['name']}")
-            async with conn.transaction():
+            cube_bytes = await _get_file_bytes(f"{base}_cube.fits")
+            mask_bytes = await _get_file_bytes(f"{base}_mask.fits")
+            mom0_bytes = await _get_file_bytes(f"{base}_mom0.fits")
+            mom1_bytes = await _get_file_bytes(f"{base}_mom1.fits")
+            mom2_bytes = await _get_file_bytes(f"{base}_mom2.fits")
+            # NOTE: cubelet _chan.fits files renames _snr.fits in SoFiA-2 v2.3
+            chan_bytes = await _get_file_bytes(f"{base}_snr.fits")
+            spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
+            pv_bytes = await _get_file_bytes(f"{base}_pv.fits")
+
+            # Do not merge the sources into the run, just do a direct import
+            if perform_merge == 0:
+                logging.info(f"Not performing merge, doing direct import. Name: {detect_dict['name']}")
+
                 await db_detection_insert(
                         conn, schema, vo_datalink_url, run.run_id, instance.instance_id, 
                         detect_dict, cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                         mom2_bytes, chan_bytes, spec_bytes, pv_bytes, False)
-            # move onto the next source
-            continue
+                # move onto the next source
+                continue
 
-        async with conn.transaction():
             result = await db_source_match(
                 conn, schema, run.run_id, detect_dict,
                 run.sanity_thresholds['uncertainty_sigma'])
@@ -260,7 +264,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                 for db_detect in result:
                     flux = (detect_dict['f_sum'], db_detect['f_sum'])
                     spatial = (detect_dict['ell_maj'], db_detect['ell_maj'],
-                               detect_dict['ell_min'], db_detect['ell_min'])
+                                detect_dict['ell_min'], db_detect['ell_min'])
                     spectral = (detect_dict['w20'], db_detect['w20'],
                                 detect_dict['w50'], db_detect['w50'])
 
@@ -376,15 +380,15 @@ async def run_merge(config, run_name, param_list, sanity):
             user=username,
             password=password,
             database=name,
-            host=host
-        )
+            host=host)
+
         try:
             run = Run(run_name, sanity)
             run = await db_run_upsert(conn, schema, run)
             instance = Instance(
                 run.run_id, run_date, output_filename, boundary, None, None,
-                None, params, None, None, None, None
-            )
+                None, params, None, None, None, None)
+
             instance = await db_instance_upsert(conn, schema, instance)
         finally:
             await conn.close()

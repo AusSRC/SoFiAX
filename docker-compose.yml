@@ -3,7 +3,7 @@ version: '3.5'
 services:
   sofiax:
     platform: linux/amd64
-    image: sofiax
+    image: aussrc/sofiax
     container_name: sofiax
     build:
       context: .

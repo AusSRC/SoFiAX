@@ -172,6 +172,11 @@ async def db_run_upsert(conn, schema: str, run: Run):
     return run
 
 
+async def db_lock_run(conn, schema: str, run: Run):
+    await conn.fetchrow(f'SELECT id FROM {schema}.run WHERE id=$1 FOR UPDATE',
+                        run.run_id)
+
+
 async def db_instance_upsert(conn, schema: str, instance: Instance):
     ins_id = await conn.fetchrow(
         f'INSERT INTO {schema}.instance \
