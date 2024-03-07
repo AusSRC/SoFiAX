@@ -164,6 +164,9 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
         output_filename = os.path.splitext(os.path.basename(input_fits))[0]
 
     vo_table = f"{output_dir}/{output_filename}_cat.xml"
+    if not os.path.exists(vo_table):
+        raise AttributeError(f'SoFiA output catalog file {vo_table} does not exist')
+
     content = await _get_file_bytes(vo_table, mode='r')
     cat = xmltodict.parse(content)
 
@@ -239,7 +242,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                 logging.info(f"Not performing merge, doing direct import. Name: {detect_dict['name']}")
 
                 await db_detection_insert(
-                        conn, schema, vo_datalink_url, run.run_id, instance.instance_id, 
+                        conn, schema, vo_datalink_url, run.run_id, instance.instance_id,
                         detect_dict, cube_bytes, mask_bytes, mom0_bytes, mom1_bytes,
                         mom2_bytes, chan_bytes, spec_bytes, pv_bytes, False)
                 # move onto the next source
@@ -395,7 +398,7 @@ async def run_merge(config, run_name, param_list, sanity):
 
         # Execute sofia (if applicable)
         if execute == 1:
-            logging.info(f'Executing Sofia {param_path}')
+            logging.info(f'Executing SoFiA {param_path}')
 
             output_path = os.path.abspath(params['output.directory'])
             await aiofiles.os.makedirs(output_path, exist_ok=True)
@@ -428,12 +431,12 @@ async def run_merge(config, run_name, param_list, sanity):
             if instance.return_code == 0 or instance.return_code is None:
                 perform_merge = int(config.get("perform_merge", 1))
 
-                logging.info(f'Sofia completed: {param_path}')
+                logging.info(f'SoFiA already completed: {param_path}')
                 await match_merge_detections(conn, schema, vo_datalink_url,
                                              run, instance, param_cwd, perform_merge)
             else:
                 code = instance.return_code
-                err = f'Sofia completed with return code: {code}'
+                err = f'SoFiA completed with return code: {code}'
                 await db_instance_upsert(conn, schema, instance)
 
                 logging.error(err)
