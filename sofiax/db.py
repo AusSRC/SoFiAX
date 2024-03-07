@@ -312,7 +312,7 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
     product_id = await conn.fetchrow(
         f'INSERT INTO {schema}.product \
             (detection_id, cube, mask, mom0, \
-            mom1, mom2, chan, spec, plot) \
+            mom1, mom2, chan, spec, pv) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) \
         ON CONFLICT (detection_id) \
         DO UPDATE SET detection_id=EXCLUDED.detection_id \
