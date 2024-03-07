@@ -162,7 +162,7 @@ async def db_run_upsert(conn, schema: str, run: Run):
     run_id = await conn.fetchrow(
         f'INSERT INTO {schema}.run (name, sanity_thresholds) \
         VALUES($1, $2) \
-        ON CONFLICT (name) \
+        ON CONFLICT (name, sanity_thresholds) \
         DO UPDATE SET name=EXCLUDED.name \
         RETURNING id',
         run.name,
@@ -224,20 +224,20 @@ async def db_source_match(conn, schema: str, run_id: int,
     err_z = detection['err_z']
 
     result = await conn.fetch(
-        f"""SELECT 
-            d.id, d.instance_id, x, y, z, f_sum, ell_maj, 
-            ell_min, w50, w20, flag, unresolved 
-            FROM {schema}.detection as d, {schema}.instance as i 
-            WHERE 
-            ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0))) 
-            <= {uncertainty_sigma} * SQRT( (($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2)) 
-            / COALESCE( NULLIF( (($1 - x)^2 + ($2 - y)^2), 0), 1) ) 
-            AND 
-            ST_3DDistance( geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z))) 
-            <= {uncertainty_sigma} * SQRT($6^2 + err_z^2) 
-            AND d.instance_id = i.id 
-            AND i.run_id = $7 
-            ORDER BY d.id 
+        f"""SELECT
+            d.id, d.instance_id, x, y, z, f_sum, ell_maj,
+            ell_min, w50, w20, flag, unresolved
+            FROM {schema}.detection as d, {schema}.instance as i
+            WHERE
+            ST_3DDistance(geometry(ST_MakePoint($1, $2, 0)), geometry(ST_MakePoint(x, y, 0)))
+            <= {uncertainty_sigma} * SQRT( (($1 - x)^2 * ($4^2 + err_x^2) + ($2 - y)^2 * ($5^2 + err_y^2))
+            / COALESCE( NULLIF( (($1 - x)^2 + ($2 - y)^2), 0), 1) )
+            AND
+            ST_3DDistance( geometry(ST_MakePoint(0, 0, $3)), geometry(ST_MakePoint(0, 0, z)))
+            <= {uncertainty_sigma} * SQRT($6^2 + err_z^2)
+            AND d.instance_id = i.id
+            AND i.run_id = $7
+            ORDER BY d.id
             ASC FOR UPDATE OF d""",
         x,
         y,
