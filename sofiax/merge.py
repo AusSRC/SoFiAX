@@ -267,7 +267,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                 for db_detect in result:
                     flux = (detect_dict['f_sum'], db_detect['f_sum'])
                     spatial = (detect_dict['ell_maj'], db_detect['ell_maj'],
-                                detect_dict['ell_min'], db_detect['ell_min'])
+                               detect_dict['ell_min'], db_detect['ell_min'])
                     spectral = (detect_dict['w20'], db_detect['w20'],
                                 detect_dict['w50'], db_detect['w50'])
 
