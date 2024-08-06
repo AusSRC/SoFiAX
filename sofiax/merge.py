@@ -145,7 +145,8 @@ def sanity_check(flux: tuple, spatial_extent: tuple,
 
 async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                                  run: Run, instance: Instance, cwd: str,
-                                 perform_merge: int):
+                                 perform_merge: int,
+                                 quality_flags: list):
     """The database connection remains open for the duration of this
     process of merging and matching detections.
 
@@ -211,9 +212,9 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                 except ValueError:
                     detect_dict[detect_names[i]] = item
 
+            # only allow selected flagged detections (default 0 or 4), throw the others away
             flag = detect_dict['flag']
-            # only check 0 or 4 flagged detections, throw the others away
-            if flag not in [0, 4]:
+            if flag not in quality_flags:
                 continue
 
             # remove id from detection list
@@ -321,7 +322,7 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
                         [i['id'] for i in result])
 
 
-async def run_merge(config, run_name, param_list, sanity):
+async def run_merge(config, run_name, param_list, sanity, quality_flags):
     schema = config.get('db_schema', 'wallaby')
     host = config['db_hostname']
     name = config['db_name']
@@ -433,7 +434,8 @@ async def run_merge(config, run_name, param_list, sanity):
 
                 logging.info(f'SoFiA already completed: {param_path}')
                 await match_merge_detections(conn, schema, vo_datalink_url,
-                                             run, instance, param_cwd, perform_merge)
+                                             run, instance, param_cwd,
+                                             perform_merge, quality_flags)
             else:
                 code = instance.return_code
                 err = f'SoFiA completed with return code: {code}'

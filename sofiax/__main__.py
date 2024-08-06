@@ -93,6 +93,8 @@ async def _main():
         .replace(" ", "").split(",")
     flux = int(read_config(config, "flux"))
     uncertainty_sigma = config.get("uncertainty_sigma", 5)
+    quality_flags = list(map(int, config.get("quality_flags", "0,4")\
+        .replace(" ", "").split(",")))
 
     sanity = {
         "flux": flux,
@@ -106,7 +108,7 @@ async def _main():
     try:
         task_list = [
             asyncio.create_task(
-                run_merge(config, run_name, args.param, sanity)
+                run_merge(config, run_name, args.param, sanity, quality_flags)
             ) for _ in range(int(processes))
         ]
         await asyncio.gather(*task_list)
