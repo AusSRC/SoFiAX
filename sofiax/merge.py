@@ -328,6 +328,7 @@ async def run_merge(config, run_name, param_list, sanity, quality_flags):
     name = config['db_name']
     username = config['db_username']
     password = config['db_password']
+    port = config['db_port']
 
     execute = int(config['sofia_execute'])
     path = config['sofia_path']
@@ -384,7 +385,9 @@ async def run_merge(config, run_name, param_list, sanity, quality_flags):
             user=username,
             password=password,
             database=name,
-            host=host)
+            host=host,
+            port=port
+        )
 
         try:
             run = Run(run_name, sanity)
@@ -426,7 +429,9 @@ async def run_merge(config, run_name, param_list, sanity, quality_flags):
             user=username,
             password=password,
             database=name,
-            host=host)
+            host=host,
+            port=port
+        )
 
         try:
             if instance.return_code == 0 or instance.return_code is None:
