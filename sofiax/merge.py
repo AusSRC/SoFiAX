@@ -208,7 +208,11 @@ async def match_merge_detections(conn, schema: str, vo_datalink_url: str,
             detect_dict = {}
             for i, item in enumerate(j['TD']):
                 try:
-                    detect_dict[detect_names[i]] = float(item)
+                    # NOTE: handle cases where field contains "nan"
+                    if "nan" in item:
+                        detect_dict[detect_names[i]] = None
+                    else:
+                        detect_dict[detect_names[i]] = float(item)
                 except ValueError:
                     detect_dict[detect_names[i]] = item
 
