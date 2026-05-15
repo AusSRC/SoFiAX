@@ -1,0 +1,35 @@
+[project]
+name = "SoFiAX"
+version = "0.2.0"
+description = "Parallel execution framework for SoFiA-2 source finder"
+Repository = "https://github.com/AusSRC/SoFiAX"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "LICENCE"
+
+[build-system]
+requires = ["setuptools", "wheel", "extension-helpers"]
+
+dependencies = [
+    "xmltodict",
+    "asyncio",
+    "aiofiles",
+    "asyncpg",
+    "numpy",
+    "astropy"
+]
+
+authors = [
+  {name = "Dave Pallot", email = "dave.pallot@uwa.edu.au"},
+  {name = "Austin Shen", email = "austin.shen@csiro.au"},
+]
+maintainers = [
+  {name = "Austin Shen", email = "austin.shen@csiro.au"}
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-cov",
+]
