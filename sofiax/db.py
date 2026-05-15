@@ -75,7 +75,7 @@ class Const(object):
         "b_peak": None,
         "v_rad_peak": None,
         "v_opt_peak": None,
-        "v_app_peak": None
+        "v_app_peak": None,
     }
 
 
@@ -89,60 +89,62 @@ class Run(object):
     @staticmethod
     def check_inputs(sanity_thresholds: dict):
         try:
-            flux = sanity_thresholds['flux']
+            flux = sanity_thresholds["flux"]
             if not isinstance(flux, int):
-                raise ValueError('flux in sanity_thresholds is not an int')
+                raise ValueError("flux in sanity_thresholds is not an int")
         except KeyError:
-            raise ValueError('flux missing from sanity_thresholds')
+            raise ValueError("flux missing from sanity_thresholds")
 
         try:
-            uncertainty_sigma = sanity_thresholds['uncertainty_sigma']
+            uncertainty_sigma = sanity_thresholds["uncertainty_sigma"]
             if not isinstance(uncertainty_sigma, int):
-                raise ValueError(
-                    'uncertainty_sigma in sanity_thresholds is not an int'
-                )
+                raise ValueError("uncertainty_sigma in sanity_thresholds is not an int")
             if uncertainty_sigma <= 0:
-                raise ValueError(
-                    'uncertainty_sigma in sanity_thresholds is <= 0'
-                )
+                raise ValueError("uncertainty_sigma in sanity_thresholds is <= 0")
         except KeyError:
-            raise ValueError(
-                'uncertainty_sigma missing from sanity_thresholds'
-            )
+            raise ValueError("uncertainty_sigma missing from sanity_thresholds")
 
         try:
-            spatial = sanity_thresholds['spatial_extent']
+            spatial = sanity_thresholds["spatial_extent"]
             if not isinstance(spatial, tuple):
-                raise ValueError(
-                    'spatial_extent in sanity_thresholds is not a tuple'
-                )
+                raise ValueError("spatial_extent in sanity_thresholds is not a tuple")
             if len(spatial) != 2:
                 raise ValueError(
-                    'spatial_extent in sanity_thresholds \
-                    is not a tuple of len(2)'
+                    "spatial_extent in sanity_thresholds \
+                    is not a tuple of len(2)"
                 )
         except KeyError:
-            raise ValueError('spatial_extent missing from sanity_thresholds')
+            raise ValueError("spatial_extent missing from sanity_thresholds")
 
         try:
-            spectral = sanity_thresholds['spectral_extent']
+            spectral = sanity_thresholds["spectral_extent"]
             if not isinstance(spectral, tuple):
-                raise ValueError(
-                    'spectral_extent in sanity_thresholds is not a tuple'
-                )
+                raise ValueError("spectral_extent in sanity_thresholds is not a tuple")
             if len(spectral) != 2:
                 raise ValueError(
-                    'spectral_extent in sanity_thresholds \
-                    is not a tuple of len(2)'
+                    "spectral_extent in sanity_thresholds \
+                    is not a tuple of len(2)"
                 )
         except KeyError:
-            raise ValueError('spectral_extent missing from sanity_thresholds')
+            raise ValueError("spectral_extent missing from sanity_thresholds")
 
 
 class Instance(object):
-    def __init__(self, run_id, run_date, filename, boundary,
-                 flag_log, reliability_plot, log, parameters,
-                 version, return_code, stdout, stderr):
+    def __init__(
+        self,
+        run_id,
+        run_date,
+        filename,
+        boundary,
+        flag_log,
+        reliability_plot,
+        log,
+        parameters,
+        version,
+        return_code,
+        stdout,
+        stderr,
+    ):
         self.instance_id = None
         self.run_id = run_id
         self.run_date = run_date
@@ -160,26 +162,27 @@ class Instance(object):
 
 async def db_run_upsert(conn, schema: str, run: Run):
     run_id = await conn.fetchrow(
-        f'INSERT INTO {schema}.run (name, sanity_thresholds) \
+        f"INSERT INTO {schema}.run (name, sanity_thresholds) \
         VALUES($1, $2) \
         ON CONFLICT (name) \
         DO UPDATE SET name=EXCLUDED.name \
-        RETURNING id',
+        RETURNING id",
         run.name,
-        json.dumps(run.sanity_thresholds)
+        json.dumps(run.sanity_thresholds),
     )
     run.run_id = run_id[0]
     return run
 
 
 async def db_lock_run(conn, schema: str, run: Run):
-    await conn.fetchrow(f'SELECT id FROM {schema}.run WHERE id=$1 FOR UPDATE',
-                        run.run_id)
+    await conn.fetchrow(
+        f"SELECT id FROM {schema}.run WHERE id=$1 FOR UPDATE", run.run_id
+    )
 
 
 async def db_instance_upsert(conn, schema: str, instance: Instance):
     ins_id = await conn.fetchrow(
-        f'INSERT INTO {schema}.instance \
+        f"INSERT INTO {schema}.instance \
             (run_id, run_date, filename, boundary, flag_log, reliability_plot,\
             log, parameters, version, return_code, stdout, stderr) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) \
@@ -196,7 +199,7 @@ async def db_instance_upsert(conn, schema: str, instance: Instance):
             return_code=EXCLUDED.return_code,  \
             stdout=EXCLUDED.stdout,  \
             stderr=EXCLUDED.stderr  \
-        RETURNING id',
+        RETURNING id",
         instance.run_id,
         instance.run_date,
         instance.filename,
@@ -208,20 +211,21 @@ async def db_instance_upsert(conn, schema: str, instance: Instance):
         instance.version,
         instance.return_code,
         instance.stdout,
-        instance.stderr
+        instance.stderr,
     )
     instance.instance_id = ins_id[0]
     return instance
 
 
-async def db_source_match(conn, schema: str, run_id: int,
-                          detection: dict, uncertainty_sigma: int):
-    x = detection['x']
-    y = detection['y']
-    z = detection['z']
-    err_x = detection['err_x']
-    err_y = detection['err_y']
-    err_z = detection['err_z']
+async def db_source_match(
+    conn, schema: str, run_id: int, detection: dict, uncertainty_sigma: int
+):
+    x = detection["x"]
+    y = detection["y"]
+    z = detection["z"]
+    err_x = detection["err_x"]
+    err_y = detection["err_y"]
+    err_z = detection["err_z"]
 
     result = await conn.fetch(
         f"""SELECT
@@ -245,11 +249,12 @@ async def db_source_match(conn, schema: str, run_id: int,
         err_x,
         err_y,
         err_z,
-        run_id)
+        run_id,
+    )
 
     for i, j in enumerate(result):
         # do not want the original detection if it already exists
-        if j['x'] == x and j['y'] == y and j['z'] == z:
+        if j["x"] == x and j["y"] == y and j["z"] == z:
             result.pop(i)
             break
     return result
@@ -263,8 +268,9 @@ def _check_bytea(var):
         return None, 0
 
 
-async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
-                                      mom0, mom1, mom2, chan, spec, pv):
+async def db_detection_product_insert(
+    conn, schema, detection_id, cube, mask, mom0, mom1, mom2, chan, spec, pv
+):
 
     cube_bytes, cube_bytes_t = _check_bytea(cube)
     if cube_bytes is None:
@@ -298,7 +304,15 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
     if pv_bytes is None:
         logging.warn(f"pv for {detection_id} too large, ignoring")
 
-    total_bytes = cube_bytes_t + mask_bytes_t + mom0_bytes_t + mom1_bytes_t + chan_bytes_t + spec_bytes_t + pv_bytes_t
+    total_bytes = (
+        cube_bytes_t
+        + mask_bytes_t
+        + mom0_bytes_t
+        + mom1_bytes_t
+        + chan_bytes_t
+        + spec_bytes_t
+        + pv_bytes_t
+    )
     if total_bytes > MAX_BYTEA:
         total_bytes = mom0_bytes_t + mom1_bytes_t + spec_bytes_t
         if total_bytes < MAX_BYTEA:
@@ -310,13 +324,13 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
             return
 
     product_id = await conn.fetchrow(
-        f'INSERT INTO {schema}.product \
+        f"INSERT INTO {schema}.product \
             (detection_id, cube, mask, mom0, \
             mom1, mom2, chan, spec, pv) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) \
         ON CONFLICT (detection_id) \
         DO UPDATE SET detection_id=EXCLUDED.detection_id \
-        RETURNING id',
+        RETURNING id",
         detection_id,
         cube_bytes,
         mask_bytes,
@@ -325,25 +339,45 @@ async def db_detection_product_insert(conn, schema, detection_id, cube, mask,
         mom2_bytes,
         chan_bytes,
         spec_bytes,
-        pv_bytes)
+        pv_bytes,
+    )
+
+    logging.info(
+        "Inserted product %i for detection_id: %s, total bytes: %s",
+        product_id,
+        detection_id,
+        total_bytes,
+    )
 
 
-async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: int, instance_id: int,
-                              detection: dict, cube: bytes, mask: bytes,
-                              mom0: bytes, mom1: bytes, mom2: bytes,
-                              chan: bytes, spec: bytes, pv: bytes,
-                              unresolved: bool = False):
+async def db_detection_insert(
+    conn,
+    schema: str,
+    vo_datalink_url: str,
+    run_id: int,
+    instance_id: int,
+    detection: dict,
+    cube: bytes,
+    mask: bytes,
+    mom0: bytes,
+    mom1: bytes,
+    mom2: bytes,
+    chan: bytes,
+    spec: bytes,
+    pv: bytes,
+    unresolved: bool = False,
+):
 
-    detection['run_id'] = run_id
-    detection['instance_id'] = instance_id
-    detection['unresolved'] = unresolved
+    detection["run_id"] = run_id
+    detection["instance_id"] = instance_id
+    detection["unresolved"] = unresolved
 
     for _, key in enumerate(Const.FULL_SCHEMA):
         if detection.get(key, None) is None:
             detection[key] = Const.FULL_SCHEMA[key]
 
     detection_id = await conn.fetchrow(
-        f'INSERT INTO {schema}.detection \
+        f"INSERT INTO {schema}.detection \
             (run_id, instance_id, unresolved, name, x, y, z, x_min, x_max, \
             y_min, y_max, z_min, z_max, n_pix, f_min, f_max, f_sum, rel, \
             flag, rms, w20, w50, ell_maj, ell_min, ell_pa, ell3s_maj, \
@@ -357,52 +391,85 @@ async def db_detection_insert(conn, schema: str, vo_datalink_url: str, run_id: i
             $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28,\
             $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, \
             $42, $43, $44, $45, $46, $47, $48, $49, $50, $51, $52, $53, \
-            $54 || currval(pg_get_serial_sequence(\'{schema}.detection\', \'id\'))) \
+            $54 || currval(pg_get_serial_sequence('{schema}.detection', 'id'))) \
         ON CONFLICT (\
             name, x, y, z, x_min, x_max, y_min, y_max, z_min, z_max, \
             n_pix, f_min, f_max, f_sum, instance_id, run_id) \
         DO UPDATE SET ra=EXCLUDED.ra, unresolved=EXCLUDED.unresolved \
-        RETURNING id',
-        detection['run_id'], detection['instance_id'], detection['unresolved'],
-        detection['name'], detection['x'], detection['y'], detection['z'],
-        detection['x_min'], detection['x_max'],
-        detection['y_min'], detection['y_max'], detection['z_min'],
-        detection['z_max'], detection['n_pix'], detection['f_min'],
-        detection['f_max'], detection['f_sum'],
-        detection['rel'], detection['flag'], detection['rms'],
-        detection['w20'], detection['w50'], detection['ell_maj'],
-        detection['ell_min'], detection['ell_pa'],
-        detection['ell3s_maj'], detection['ell3s_min'],
-        detection['ell3s_pa'], detection['kin_pa'], detection['err_x'],
-        detection['err_y'], detection['err_z'], detection['err_f_sum'],
-        detection['ra'], detection['dec'], detection['freq'], detection['l'],
-        detection['b'], detection['v_rad'], detection['v_opt'],
-        detection['v_app'], detection['wm50'],
-        detection['x_peak'], detection['y_peak'], detection['z_peak'],
-        detection['ra_peak'], detection['dec_peak'], detection['freq_peak'],
-        detection['l_peak'], detection['b_peak'], detection['v_rad_peak'],
-        detection['v_opt_peak'], detection['v_app_peak'],
-        vo_datalink_url
+        RETURNING id",
+        detection["run_id"],
+        detection["instance_id"],
+        detection["unresolved"],
+        detection["name"],
+        detection["x"],
+        detection["y"],
+        detection["z"],
+        detection["x_min"],
+        detection["x_max"],
+        detection["y_min"],
+        detection["y_max"],
+        detection["z_min"],
+        detection["z_max"],
+        detection["n_pix"],
+        detection["f_min"],
+        detection["f_max"],
+        detection["f_sum"],
+        detection["rel"],
+        detection["flag"],
+        detection["rms"],
+        detection["w20"],
+        detection["w50"],
+        detection["ell_maj"],
+        detection["ell_min"],
+        detection["ell_pa"],
+        detection["ell3s_maj"],
+        detection["ell3s_min"],
+        detection["ell3s_pa"],
+        detection["kin_pa"],
+        detection["err_x"],
+        detection["err_y"],
+        detection["err_z"],
+        detection["err_f_sum"],
+        detection["ra"],
+        detection["dec"],
+        detection["freq"],
+        detection["l"],
+        detection["b"],
+        detection["v_rad"],
+        detection["v_opt"],
+        detection["v_app"],
+        detection["wm50"],
+        detection["x_peak"],
+        detection["y_peak"],
+        detection["z_peak"],
+        detection["ra_peak"],
+        detection["dec_peak"],
+        detection["freq_peak"],
+        detection["l_peak"],
+        detection["b_peak"],
+        detection["v_rad_peak"],
+        detection["v_opt_peak"],
+        detection["v_app_peak"],
+        vo_datalink_url,
     )
 
-    await db_detection_product_insert(conn, schema, detection_id[0], cube, mask, mom0,
-                                      mom1, mom2, chan, spec, pv)
+    await db_detection_product_insert(
+        conn, schema, detection_id[0], cube, mask, mom0, mom1, mom2, chan, spec, pv
+    )
     return detection_id[0]
 
 
 async def db_delete_detection(conn, schema: str, detection_id: int):
-    await conn.fetchrow(
-        f'DELETE FROM {schema}.detection WHERE id=$1',
-        detection_id
-    )
+    await conn.fetchrow(f"DELETE FROM {schema}.detection WHERE id=$1", detection_id)
 
 
-async def db_update_detection_unresolved(conn, schema: str, unresolved: bool,
-                                         detection_id_list: list):
+async def db_update_detection_unresolved(
+    conn, schema: str, unresolved: bool, detection_id_list: list
+):
     await conn.fetchrow(
-        f'UPDATE {schema}.detection \
+        f"UPDATE {schema}.detection \
         SET unresolved=$1 \
-        WHERE id = ANY($2::bigint[])',
+        WHERE id = ANY($2::bigint[])",
         unresolved,
-        detection_id_list
+        detection_id_list,
     )
