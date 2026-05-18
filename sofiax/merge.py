@@ -259,8 +259,10 @@ async def match_merge_detections(
             mom2_bytes = await _get_file_bytes(f"{base}_mom2.fits")
             # NOTE: cubelet _chan.fits files renames _snr.fits in SoFiA-2 v2.3
             chan_bytes = await _get_file_bytes(f"{base}_snr.fits")
+            aper_spec_bytes = await _get_file_bytes(f"{base}_spec_aperture.txt")
             spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
             pv_bytes = await _get_file_bytes(f"{base}_pv.fits")
+            plot_bytes = await _get_file_bytes(f"{base}_plot.html")
 
             # Do not merge the sources into the run, just do a direct import
             if perform_merge == 0:
@@ -282,7 +284,9 @@ async def match_merge_detections(
                     mom2_bytes,
                     chan_bytes,
                     spec_bytes,
+                    aper_spec_bytes,
                     pv_bytes,
+                    plot_bytes,
                     False,
                 )
                 # move onto the next source
@@ -313,7 +317,9 @@ async def match_merge_detections(
                     mom2_bytes,
                     chan_bytes,
                     spec_bytes,
+                    aper_spec_bytes,
                     pv_bytes,
+                    plot_bytes,
                 )
             else:
                 logging.info(
@@ -363,7 +369,9 @@ async def match_merge_detections(
                                 mom2_bytes,
                                 chan_bytes,
                                 spec_bytes,
+                                aper_spec_bytes,
                                 pv_bytes,
+                                plot_bytes,
                                 db_detect["unresolved"],
                             )
 
@@ -394,7 +402,9 @@ async def match_merge_detections(
                                     mom2_bytes,
                                     chan_bytes,
                                     spec_bytes,
+                                    aper_spec_bytes,
                                     pv_bytes,
+                                    plot_bytes,
                                     db_detect["unresolved"],
                                 )
 
@@ -420,7 +430,9 @@ async def match_merge_detections(
                         mom2_bytes,
                         chan_bytes,
                         spec_bytes,
+                        aper_spec_bytes,
                         pv_bytes,
+                        plot_bytes,
                         True,
                     )
 

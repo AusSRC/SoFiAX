@@ -269,9 +269,12 @@ def _check_bytea(var):
 
 
 async def db_detection_product_insert(
-    conn, schema, detection_id, cube, mask, mom0, mom1, mom2, chan, spec, pv
+    conn, schema, detection_id, cube, mask, mom0, mom1, mom2, chan, spec, aper_spec=None, pv=None, plot=None
 ):
+    """Insert products into database following SoFiA-2 outputs.
+    Aper_spec, pv, and plot are optional to ensure it is compatible with earlier releases of SoFiA-2.
 
+    """
     cube_bytes, cube_bytes_t = _check_bytea(cube)
     if cube_bytes is None:
         logging.warn(f"cube for {detection_id} too large, ignoring")
@@ -300,18 +303,32 @@ async def db_detection_product_insert(
     if spec_bytes is None:
         logging.warn(f"spec for {detection_id} too large, ignoring")
 
-    pv_bytes, pv_bytes_t = _check_bytea(pv)
-    if pv_bytes is None:
-        logging.warn(f"pv for {detection_id} too large, ignoring")
+    if aper_spec is not None:
+        aper_spec_bytes, aper_spec_bytes_t = _check_bytea(aper_spec)
+        if aper_spec_bytes is None:
+            logging.warn(f"aper_spec for {detection_id} too large, ignoring")
+
+    if pv is not None:
+        pv_bytes, pv_bytes_t = _check_bytea(pv)
+        if pv_bytes is None:
+            logging.warn(f"pv for {detection_id} too large, ignoring")
+
+    if plot is not None:
+        plot_bytes, plot_bytes_t = _check_bytea(plot)
+        if plot_bytes is None:
+            logging.warn(f"plot for {detection_id} too large, ignoring")
 
     total_bytes = (
         cube_bytes_t
         + mask_bytes_t
         + mom0_bytes_t
         + mom1_bytes_t
+        + mom2_bytes_t
         + chan_bytes_t
         + spec_bytes_t
+        + aper_spec_bytes_t
         + pv_bytes_t
+        + plot_bytes_t
     )
     if total_bytes > MAX_BYTEA:
         total_bytes = mom0_bytes_t + mom1_bytes_t + spec_bytes_t
@@ -326,8 +343,8 @@ async def db_detection_product_insert(
     product_id = await conn.fetchrow(
         f"INSERT INTO {schema}.product \
             (detection_id, cube, mask, mom0, \
-            mom1, mom2, chan, spec, pv) \
-        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) \
+            mom1, mom2, chan, spec, aper_spec, pv, plot) \
+        VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) \
         ON CONFLICT (detection_id) \
         DO UPDATE SET detection_id=EXCLUDED.detection_id \
         RETURNING id",
@@ -339,7 +356,9 @@ async def db_detection_product_insert(
         mom2_bytes,
         chan_bytes,
         spec_bytes,
+        aper_spec_bytes,
         pv_bytes,
+        plot_bytes,
     )
 
     logging.info(
