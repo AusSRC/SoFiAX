@@ -106,6 +106,10 @@ async def _main():
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def cli():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(_main())
+
+
+if __name__ == "__main__":
+    cli()
