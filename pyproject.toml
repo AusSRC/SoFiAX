@@ -1,0 +1,37 @@
+[project]
+name = "SoFiAX"
+version = "0.2.0"
+description = "Parallel execution framework for SoFiA-2 source finder"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "xmltodict",
+    "asyncio",
+    "aiofiles",
+    "asyncpg",
+    "numpy",
+    "astropy"
+]
+
+authors = [
+  {name = "Dave Pallot", email = "dave.pallot@uwa.edu.au"},
+  {name = "Austin Shen", email = "austin.shen@csiro.au"},
+]
+
+maintainers = [
+  {name = "Austin Shen", email = "austin.shen@csiro.au"}
+]
+
+[build-system]
+requires = ["setuptools>=61", "wheel", "extension-helpers"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+sofiax = "sofiax.__main__:cli"
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-cov",
+]

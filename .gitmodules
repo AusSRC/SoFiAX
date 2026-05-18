@@ -1,0 +1,3 @@
+[submodule "python-templates"]
+	path = python-templates
+	url = git@github.com:AusSRC/python-templates.git

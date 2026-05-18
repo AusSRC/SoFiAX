@@ -25,13 +25,11 @@ import sys
 
 from sofiax.utils import read_config
 from sofiax.merge import run_merge
-from sofiax.db import Run, Const
+from sofiax.db import Run
 
 
 def logger():
-    """Set up the logger.
-
-    """
+    """Set up the logger."""
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
@@ -45,19 +43,12 @@ def logger():
 
 
 def parse_args():
-    """Parse arguments for the execution of SoFiAX.
-
-    """
+    """Parse arguments for the execution of SoFiAX."""
     parser = argparse.ArgumentParser(
-        prog='SoFiAX',
-        description="Sofiax standalone execution."
+        prog="SoFiAX", description="Sofiax standalone execution."
     )
     parser.add_argument(
-        "-c",
-        "--conf",
-        dest="conf",
-        required=True,
-        help="configuration file"
+        "-c", "--conf", dest="conf", required=True, help="configuration file"
     )
     parser.add_argument(
         "-p",
@@ -65,16 +56,14 @@ def parse_args():
         dest="param",
         nargs="+",
         required=True,
-        help="sofia parameter file"
+        help="sofia parameter file",
     )
     args = parser.parse_args()
     return args
 
 
 def parse_config(file):
-    """Read config.ini file.
-
-    """
+    """Read config.ini file."""
     config = configparser.ConfigParser()
     config.read(file)
     return config["SoFiAX"]
@@ -87,20 +76,19 @@ async def _main():
 
     processes = config.get("sofia_processes", 0)
     run_name = read_config(config, "run_name")
-    spatial = read_config(config, "spatial_extent")\
-        .replace(" ", "").split(",")
-    spectral = read_config(config, "spectral_extent")\
-        .replace(" ", "").split(",")
+    spatial = read_config(config, "spatial_extent").replace(" ", "").split(",")
+    spectral = read_config(config, "spectral_extent").replace(" ", "").split(",")
     flux = int(read_config(config, "flux"))
     uncertainty_sigma = config.get("uncertainty_sigma", 5)
-    quality_flags = list(map(int, config.get("quality_flags", "0,4")\
-        .replace(" ", "").split(",")))
+    quality_flags = list(
+        map(int, config.get("quality_flags", "0,4").replace(" ", "").split(","))
+    )
 
     sanity = {
         "flux": flux,
         "spatial_extent": tuple(map(int, spatial)),
         "spectral_extent": tuple(map(int, spectral)),
-        "uncertainty_sigma": int(uncertainty_sigma)
+        "uncertainty_sigma": int(uncertainty_sigma),
     }
 
     Run.check_inputs(sanity)
@@ -109,7 +97,8 @@ async def _main():
         task_list = [
             asyncio.create_task(
                 run_merge(config, run_name, args.param, sanity, quality_flags)
-            ) for _ in range(int(processes))
+            )
+            for _ in range(int(processes))
         ]
         await asyncio.gather(*task_list)
     except Exception as e:
@@ -117,6 +106,10 @@ async def _main():
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def cli():
     loop = asyncio.new_event_loop()
     loop.run_until_complete(_main())
+
+
+if __name__ == "__main__":
+    cli()
