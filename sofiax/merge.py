@@ -262,7 +262,7 @@ async def match_merge_detections(
             aper_spec_bytes = await _get_file_bytes(f"{base}_spec_aperture.txt")
             spec_bytes = await _get_file_bytes(f"{base}_spec.txt")
             pv_bytes = await _get_file_bytes(f"{base}_pv.fits")
-            plot_bytes = await _get_file_bytes(f"{base}_plot.html.gz")
+            plot_bytes = await _get_file_bytes(f"{base}_summary.html.gz")
 
             # Do not merge the sources into the run, just do a direct import
             if perform_merge == 0:

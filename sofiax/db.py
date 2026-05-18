@@ -342,7 +342,9 @@ async def db_detection_product_insert(
             mom1, mom2, chan, spec, aper_spec, pv, plot) \
         VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) \
         ON CONFLICT (detection_id) \
-        DO UPDATE SET detection_id=EXCLUDED.detection_id \
+        DO UPDATE SET \
+            plot=EXCLUDED.plot, \
+            detection_id=EXCLUDED.detection_id \
         RETURNING id",
         detection_id,
         cube_bytes,
