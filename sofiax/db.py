@@ -303,20 +303,17 @@ async def db_detection_product_insert(
     if spec_bytes is None:
         logging.warn(f"spec for {detection_id} too large, ignoring")
 
-    if aper_spec is not None:
-        aper_spec_bytes, aper_spec_bytes_t = _check_bytea(aper_spec)
-        if aper_spec_bytes is None:
-            logging.warn(f"aper_spec for {detection_id} too large, ignoring")
+    aper_spec_bytes, aper_spec_bytes_t = _check_bytea(aper_spec)
+    if aper_spec_bytes is None:
+        logging.warn(f"aper_spec for {detection_id} too large, ignoring")
 
-    if pv is not None:
-        pv_bytes, pv_bytes_t = _check_bytea(pv)
-        if pv_bytes is None:
-            logging.warn(f"pv for {detection_id} too large, ignoring")
+    pv_bytes, pv_bytes_t = _check_bytea(pv)
+    if pv_bytes is None:
+        logging.warn(f"pv for {detection_id} too large, ignoring")
 
-    if plot is not None:
-        plot_bytes, plot_bytes_t = _check_bytea(plot)
-        if plot_bytes is None:
-            logging.warn(f"plot for {detection_id} too large, ignoring")
+    plot_bytes, plot_bytes_t = _check_bytea(plot)
+    if plot_bytes is None:
+        logging.warn(f"plot for {detection_id} too large, ignoring")
 
     total_bytes = (
         cube_bytes_t
@@ -327,7 +324,6 @@ async def db_detection_product_insert(
         + chan_bytes_t
         + spec_bytes_t
         + aper_spec_bytes_t
-        + pv_bytes_t
         + plot_bytes_t
     )
     if total_bytes > MAX_BYTEA:
@@ -337,7 +333,7 @@ async def db_detection_product_insert(
             mask_bytes = None
             chan_bytes = None
         else:
-            logging.warn(f"Products for {detection_id} too large, ignoring")
+            logging.warn(f"Products for {detection_id} too large {total_bytes / 1e6:.2f} MB, ignoring")
             return
 
     product_id = await conn.fetchrow(
@@ -361,13 +357,6 @@ async def db_detection_product_insert(
         plot_bytes,
     )
 
-    logging.info(
-        "Inserted product %i for detection_id: %s, total bytes: %s",
-        product_id,
-        detection_id,
-        total_bytes,
-    )
-
 
 async def db_detection_insert(
     conn,
@@ -383,10 +372,12 @@ async def db_detection_insert(
     mom2: bytes,
     chan: bytes,
     spec: bytes,
-    pv: bytes,
+    aper_spec: bytes = None,
+    pv: bytes = None,
+    plot: bytes = None,
     unresolved: bool = False,
 ):
-
+    """Insert detections and corresponding products into database. """
     detection["run_id"] = run_id
     detection["instance_id"] = instance_id
     detection["unresolved"] = unresolved
@@ -473,7 +464,7 @@ async def db_detection_insert(
     )
 
     await db_detection_product_insert(
-        conn, schema, detection_id[0], cube, mask, mom0, mom1, mom2, chan, spec, pv
+        conn, schema, detection_id[0], cube, mask, mom0, mom1, mom2, chan, spec, aper_spec, pv, plot
     )
     return detection_id[0]
 
